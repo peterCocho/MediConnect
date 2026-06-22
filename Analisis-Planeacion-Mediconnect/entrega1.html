@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>MediConnect - Entrega 1</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">MediConnect - Entrega 1</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#cronograma-detallado-6-meses---entregas-mensuales"
+id="toc-cronograma-detallado-6-meses---entregas-mensuales">Cronograma
+Detallado (6 Meses - Entregas Mensuales)</a></li>
+<li><a href="#plan-de-pruebas-detalle"
+id="toc-plan-de-pruebas-detalle">Plan de Pruebas (Detalle)</a></li>
+</ul>
+</nav>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.002.png" /></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Análisis, Arquitectura y Base de Datos
+MediConnect (Proyecto Productivo)</th>
+<th style="text-align: right;"></th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<p><strong>APRENDIZ:</strong></p>
+<p>PEDRO PABLO CONTRERAS VEGA</p>
+<p><strong>INSTRUTOR</strong>:</p>
+<p>EDGAR CARVAJAL CACERES</p>
+<p><strong>Servicio Nacional de Aprendizaje (SENA)</strong></p>
+<p>PROGRAMACION DE SOFTWARE (Ficha: 3186277)</p>
+<p>TECNICO</p>
+<p><strong>2026</strong></p>
+<p>El siguiente bloque contiene las Historias de Usuario priorizadas
+para el MVP. Cada historia describe el rol, la necesidad y los criterios
+de aceptación que guiarán el desarrollo, las pruebas y la priorización
+de entregas. Las HU están organizadas por épicas funcionales para
+facilitar la trazabilidad entre requisitos, tareas y casos de
+prueba.</p>
+<p><strong>Historias de Usuario</strong></p>
+<p><strong>ÉPICA 1: Autenticación y Control de Acceso
+(RBAC)</strong></p>
+<p><strong>HU-01: Autenticación de Usuarios (Login)</strong></p>
+<ul>
+<li><strong>Como</strong> Usuario del sistema (Administrador, Médico o
+Recepcionista).</li>
+<li><strong>Quiero</strong> iniciar sesión utilizando mis
+credenciales.</li>
+<li><strong>Para</strong> acceder a las funciones del sistema según mi
+nivel de permisos.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>El sistema debe validar el usuario y contraseña contra la base de
+datos.</li>
+<li>Las contraseñas deben estar encriptadas utilizando el algoritmo
+Argon2.</li>
+<li>Una autenticación exitosa debe generar y retornar un token JWT (JSON
+Web Token) sin estado.</li>
+<li>El frontend debe redirigir al dashboard correspondiente según el rol
+extraído del JWT (RF-01).</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.003.png" /></p>
+<p><strong>HU-02: Renderizado Dinámico de Interfaces</strong></p>
+<ul>
+<li><strong>Como</strong> Usuario autenticado.</li>
+<li><strong>Quiero</strong> ver únicamente las opciones de navegación
+correspondientes a mi rol.</li>
+<li><strong>Para</strong> no tener acceso a vistas no autorizadas.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>Si el rol es MÉDICO, el sidebar debe ocultar “Gestión de Usuarios” y
+mostrar “Mis Pacientes” y “Mi Agenda”.</li>
+<li>Cualquier intento de forzar una URL no autorizada en el frontend
+debe redirigir a una pantalla de error 403.</li>
+<li>El backend debe rechazar peticiones a endpoints restringidos
+mediante la configuración del SecurityFilterChain.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.004.png" /></p>
+<p><strong>ÉPICA 2: Admisión y Aprovisionamiento</strong></p>
+<p><strong>HU-03: Registro de Paciente y Aprovisionamiento de
+Expediente</strong></p>
+<ul>
+<li><strong>Como</strong> Recepcionista.</li>
+<li><strong>Quiero</strong> registrar a un paciente nuevo en el
+sistema.</li>
+<li><strong>Para</strong> poder agendarle citas posteriormente.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>El formulario debe requerir obligatoriamente Documento, Nombre
+Completo, Teléfono y Fecha de Nacimiento.</li>
+<li><strong>Transaccionalidad Crítica:</strong> Al guardar al paciente
+en la tabla patients, el backend debe generar automáticamente (en la
+misma transacción) un registro vacío en la tabla medical_records
+vinculado a este paciente.</li>
+<li>Si falla la creación de la Historia Clínica, debe hacerse un
+<em>rollback</em> y no debe guardarse al paciente.</li>
+<li>El documento de identidad debe ser único (UNIQUE constraint). El
+sistema debe lanzar un error 409 si se intenta duplicar.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.005.png" /></p>
+<p><strong>ÉPICA 3: Gestión de Agenda Médica</strong></p>
+<p><strong>Historia de Usuario 04 (HU-04): Motor de Agendamiento
+Concurrente</strong></p>
+<ul>
+<li><strong>Como Recepcionista.</strong></li>
+<li><strong>Quiero</strong> agendar una cita médica asignando un
+paciente, un médico y una fecha/hora específica.</li>
+<li><strong>Para</strong> reservar el espacio en la agenda clínica sin
+riesgo de colisiones horarias.</li>
+<li>Criterios de Aceptación:
+<ul>
+<li>El sistema debe validar la existencia de una Historia Clínica
+(MedicalRecord) asociada al paciente. Si no existe, la transacción debe
+ser rechazada.</li>
+<li>El sistema debe asumir bloques de consulta de exactamente 30
+minutos.</li>
+<li>Control de Concurrencia: Si dos usuarios intentan agendar al mismo
+médico en intervalos que se solapen, el sistema debe bloquear el
+registro del médico a nivel de base de datos (PESSIMISTIC_WRITE) y
+rechazar la segunda petición con un error HTTP 409 (Conflict).</li>
+<li>La cita debe crearse con estado SCHEDULED y todos los campos
+clínicos (signos vitales, notas) deben inicializarse como nulos.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.006.png" /></p>
+<p><strong>Historia de Usuario 05 (HU-05): Automatización de
+Notificaciones Asíncronas</strong></p>
+<ul>
+<li><strong>Como</strong> Sistema (Backend).</li>
+<li><strong>Quiero</strong> emitir una alerta de notificación
+inmediatamente después de confirmar una cita.</li>
+<li><strong>Para</strong> que el servicio de integración (n8n) envíe la
+confirmación por WhatsApp al paciente sin congelar la interfaz de la
+recepcionista.</li>
+<li>Criterios de Aceptación:
+<ul>
+<li>El evento de notificación solo debe dispararse después de que la
+base de datos confirme el guardado de la cita (After Commit).</li>
+<li>El sistema debe registrar la notificación en la base de datos con
+estado PENDING antes de hacer la petición HTTP.</li>
+<li>El payload enviado al webhook debe contener el ID de la
+notificación, nombre del paciente, número de destino, nombre del médico
+y fecha en formato ISO 8601.</li>
+<li>Si el servidor de n8n no responde, el sistema debe capturar el error
+y cambiar el estado en la base de datos a FAILED sin detener la
+ejecución de la aplicación.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.007.png" /></p>
+<p><strong>ÉPICA 4: Ejecución Clínica (Modelo Híbrido)</strong></p>
+<p><strong>HU-06: Registro de Atención Médica</strong></p>
+<ul>
+<li><strong>Como</strong> Médico.</li>
+<li><strong>Quiero</strong> registrar los datos clínicos de un paciente
+durante su cita.</li>
+<li><strong>Para</strong> mantener la trazabilidad de su historia
+clínica.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>El médico solo puede registrar datos en una cita cuyo estado sea
+SCHEDULED.</li>
+<li>Al guardar, el estado de la cita debe cambiar a COMPLETED.</li>
+<li><strong>Validación Estructural:</strong> Los campos de signos
+vitales deben respetar las restricciones de la base de datos (ej.
+Presión sistólica entre 0 y 300).</li>
+<li>El sistema debe permitir actualizar únicamente los campos clínicos
+de la entidad consultations (peso, presión, CIE-10, notas), manteniendo
+inmutables la fecha original y el médico asignado.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.008.png" /></p>
+<p><strong>HU-07: Visualización de Línea de Tiempo Clínica</strong></p>
+<ul>
+<li><strong>Como</strong> Médico.</li>
+<li><strong>Quiero</strong> consultar el historial de atenciones previas
+de un paciente.</li>
+<li><strong>Para</strong> tomar decisiones médicas informadas.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>La interfaz debe cargar todas las citas en estado COMPLETED
+asociadas al medical_record_id del paciente.</li>
+<li>La información debe presentarse en orden cronológico descendente
+(las más recientes primero).</li>
+<li>Estas consultas pasadas deben ser estrictamente de solo lectura
+(inmutabilidad de datos).</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.009.png" /></p>
+<p><strong>ÉPICA 5: Administración Global del Sistema</strong></p>
+<p><strong>HU-08: Gestión Integral de Personal (Pantalla: Gestión de
+Usuarios)</strong></p>
+<ul>
+<li><strong>Como</strong> Administrador.</li>
+<li><strong>Quiero</strong> administrar el acceso y los datos del
+personal de la clínica (médicos y recepcionistas).</li>
+<li><strong>Para</strong> mantener el control operativo y la seguridad
+del sistema.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>El sistema debe listar a todos los usuarios mostrando su rol y
+especialidad (si aplica).</li>
+<li>Al crear un usuario con el rol MÉDICO, el backend debe insertar los
+datos en la tabla users y simultáneamente crear su perfil en la tabla
+doctors (relación 1:1).</li>
+<li><strong>Soft Delete:</strong> El interruptor (toggle) de
+“Activo/Inactivo” no debe borrar el registro de la base de datos, sino
+cambiar el campo booleano is_active a false. Un usuario inactivo debe
+recibir un error 401 si intenta iniciar sesión.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.010.png" /></p>
+<p><strong>HU-09: Panel de Reportes Clínicos (Pantalla:
+Reportes)</strong></p>
+<ul>
+<li><strong>Como</strong> Administrador.</li>
+<li><strong>Quiero</strong> visualizar estadísticas consolidadas sobre
+la operación de la clínica.</li>
+<li><strong>Para</strong> analizar el volumen de atención y la
+prevalencia de diagnósticos.</li>
+<li><strong>Criterios de Aceptación:</strong>
+<ul>
+<li>El dashboard debe consumir un endpoint que retorne el conteo total
+de consultas en estado COMPLETED para el mes actual.</li>
+<li>El sistema debe calcular y mostrar la distribución de los
+“Diagnósticos Más Frecuentes”, ejecutando una consulta de agrupación
+(GROUP BY icd10_code) en PostgreSQL, ordenada de mayor a menor
+frecuencia.</li>
+</ul></li>
+</ul>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.011.png" /></p>
+<p><strong>Diagrama Relacional</strong></p>
+<p>A continuación se presenta el Diagrama Entidad-Relación (ER) que
+modela las principales entidades del sistema y sus relaciones. Este
+diagrama ilustra entidades clave como users, patients, medical_records,
+doctors, consultations y notifications.</p>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.012.png" /></p>
+<p><strong>Diagramas de Flujo de la Aplicación</strong></p>
+<p>Los diagramas de flujo muestran los procesos críticos: el flujo de
+agendamiento desde recepción hasta confirmación, el envío asíncrono de
+notificaciones mediante n8n, y el flujo de atención médica durante la
+consulta. Cada diagrama destaca las decisiones, transacciones
+After-Commit y puntos de integración externa que requieren pruebas e
+instrumentación.</p>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.013.png" /></p>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.014.png" /></p>
+<p><img
+src="Aspose.Words.1e1f496f-98b4-4381-8e75-1fac17aa273e.015.png" /></p>
+<p>Contratos de API (Especificación de Integración)</p>
+<p>Para garantizar el desacoplamiento entre el frontend (React) y el
+backend (Spring Boot), el sistema operará bajo una arquitectura RESTful
+estricta. A continuación se documenta el contrato del endpoint más
+crítico del sistema (Agendamiento), el cual servirá como estándar para
+el resto de la API.</p>
+<p>Endpoint: POST /api/consultations</p>
+<p>Propósito: Registrar una nueva cita médica ejecutando validación de
+concurrencia.</p>
+<p>Protección: Requiere Header Authorization: Bearer <JWT> (Rol:
+RECEPCIONISTA).</p>
+<p>Payload de Petición (Request JSON):</p>
+<p>JSON</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;medicalRecordId&quot;</span><span class="fu">:</span> <span class="dv">105</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;doctorId&quot;</span><span class="fu">:</span> <span class="dv">12</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;consultationDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-06-15T14:30:00Z&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Respuestas Esperadas (Responses):</p>
+<ul>
+<li>201 Created: La cita fue agendada exitosamente. Retorna el ID de la
+cita generada.</li>
+<li>400 Bad Request: Estructura JSON inválida o fecha en el pasado.</li>
+<li>409 Conflict: Violación de regla de negocio. El médico ya tiene una
+cita asignada en ese bloque de 30 minutos (Solapamiento).</li>
+<li>403 Forbidden: El token JWT es válido, pero el usuario no tiene el
+rol de RECEPCIONISTA.</li>
+</ul>
+<p><strong>Requisitos No Funcionales (RNF) y Seguridad</strong></p>
+<p>Dado que MediConnect procesará información clínica protegida, el
+sistema debe adherirse a restricciones técnicas rigurosas que no son
+negociables.</p>
+<p>Seguridad y Control de Acceso:</p>
+<ol type="1">
+<li>Encriptación de Credenciales: Todas las contraseñas en la tabla
+users serán procesadas por el algoritmo Argon2id (estándar OWASP
+actual). Prohibido el uso de MD5 o SHA-256 sin <em>salt</em>.</li>
+<li>Ciclo de Vida del Token (TTL): El token JWT tendrá un tiempo de
+expiración estricto de 2 horas. No se implementará <em>Refresh
+Token</em>. Por seguridad clínica, si un médico deja la sesión abierta,
+el sistema debe forzar un nuevo login para evitar accesos no autorizados
+al consultorio.</li>
+<li>CORS (Cross-Origin Resource Sharing): El backend de Spring Boot
+estará configurado para aceptar peticiones HTTP única y exclusivamente
+desde el dominio/IP exacto donde esté desplegado el frontend de
+React.</li>
+</ol>
+<p>Rendimiento y Disponibilidad:</p>
+<ol type="1">
+<li>Tiempo de Respuesta (Latencia): Las transacciones de lectura (GET)
+deben responder en menos de 300ms. Las transacciones de escritura
+compleja (como agendamiento con bloqueo en base de datos) no deben
+superar los 800ms.</li>
+<li>Bloqueos de Base de Datos: Las consultas de disponibilidad de agenda
+utilizarán bloqueos pesimistas (PESSIMISTIC_WRITE) limitados
+estrictamente al nivel de fila para no congelar la tabla completa de
+consultations.</li>
+</ol>
+<p><strong>Arquitectura de Despliegue (Infraestructura
+Single-Tenant)</strong></p>
+<p>El sistema está diseñado bajo un modelo <em>Single-Tenant</em> (una
+instancia de infraestructura por clínica) para garantizar el aislamiento
+físico de los datos médicos.</p>
+<pre class="mermaid"><code>flowchart LR
+  subgraph server[&quot;Servidor VPS de Producción&quot;]
+    frontend[Nginx&lt;br/&gt;React Frontend]
+    backend[Spring Boot&lt;br/&gt;REST API]
+    db[PostgreSQL&lt;br/&gt;Database]
+    n8n[n8n&lt;br/&gt;Webhook Server]
+  end
+  browser[&quot;Navegador Cliente&quot;]
+  whatsapp[&quot;Meta WhatsApp API&quot;]
+  browser --&gt; frontend
+  browser --&gt; backend
+  backend --&gt; db
+  backend --&gt; n8n
+  n8n --&gt; whatsapp</code></pre>
+<p><em>(Nota sobre la gráfica: Muestra explícitamente que el navegador
+del cliente descarga el frontend desde Nginx, pero se comunica
+directamente con la API de Spring Boot. Spring Boot orquesta la base de
+datos y dispara los eventos hacia el contenedor local de n8n, el cual es
+el único con salida hacia Meta).</em></p>
+<p><strong>Matriz de Riesgos Técnicos (Contingencia)</strong></p>
+<p>El diseño asume que los componentes fallarán. Esta matriz define la
+tolerancia a fallos del sistema y las rutas de mitigación.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Componente Crítico</th>
+<th style="text-align: left;">Riesgo Identificado</th>
+<th style="text-align: left;">Impacto Operativo</th>
+<th style="text-align: left;">Estrategia de Mitigación (Fallback)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Base de Datos (PostgreSQL)</td>
+<td style="text-align: left;">Corrupción de datos o caída del
+servidor.</td>
+<td style="text-align: left;">CRÍTICO. Pérdida total de historias
+clínicas y agenda.</td>
+<td style="text-align: left;">Automatización de rutinas pg_dump a las
+02:00 AM. Los volcados encriptados se enviarán fuera del servidor a un
+espacio de almacenamiento en la nube de alta capacidad (ej. TeraBox /
+AWS S3) garantizando un RTO (Tiempo de recuperación) menor a 4
+horas.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Integración n8n / Meta</td>
+<td style="text-align: left;">Caída de la API de Meta o error en el
+webhook local de n8n.</td>
+<td style="text-align: left;">MODERADO. Los pacientes no reciben
+confirmación por WhatsApp.</td>
+<td style="text-align: left;">Desacoplamiento asíncrono. La caída de n8n
+no congela el agendamiento. El backend marca el registro en la tabla
+notifications como FAILED. La recepcionista revisa el panel de alertas y
+llama al paciente manualmente.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Red (Latencia)</td>
+<td style="text-align: left;">Conexión a internet inestable en la
+clínica.</td>
+<td style="text-align: left;">MODERADO. Errores de <em>timeout</em> al
+intentar guardar la evolución médica.</td>
+<td style="text-align: left;">El frontend en React implementará un botón
+de reintento en las peticiones que fallen por error de red
+(ERR_NETWORK), manteniendo el <em>payload</em> en el estado (state) para
+que el médico no pierda lo que escribió.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cronograma-detallado-6-meses---entregas-mensuales">Cronograma
+Detallado (6 Meses - Entregas Mensuales)</h2>
+<ul>
+<li><p>Mes 1 (Entrega 1): Análisis, Arquitectura y Base de Datos.
+Artefactos: Documento de Arquitectura (SAD), Casos de Uso, Modelo
+Relacional, script V1__init_schema_mediconnect.sql y Prototipos UI en
+Figma. (Fase actual completada).</p></li>
+<li><p>Mes 2 (Entrega 2): Backend - Seguridad y Entidades Base (Spring
+Boot). Entregables: Configuración de Spring Security con JWT y
+encriptación Argon2id. Endpoints CRUD para Usuarios (RBAC estricto),
+Doctores y Pacientes.</p></li>
+<li><p>Mes 3 (Entrega 3): Backend - Motor Transaccional y
+Automatización. Entregables: Lógica de agendamiento con manejo de
+concurrencia (PESSIMISTIC_WRITE), endpoints para ejecución de consultas
+clínicas (inmutabilidad). Programación del hilo asíncrono y
+configuración del flujo receptor en n8n.</p></li>
+<li><p>Mes 4 (Entrega 4): Frontend - Estructura y Seguridad (React).
+Entregables: Inicialización con Vite, enrutamiento protegido (React
+Router), Contexto de Autenticación para el token JWT, renderizado
+dinámico del Layout (Sidebar según roles) y maquetación de vistas
+CRUD.</p></li>
+<li><p>Mes 5 (Entrega 5): Frontend - Integración Transaccional.
+Entregables: Conexión asíncrona (Axios/Fetch) con la API para el módulo
+complejo de agendamiento, validación de formularios de evolución
+clínica, y mapeo de errores HTTP (renderizar correctamente el 409
+Conflict o 400 Bad Request en la UI).</p></li>
+<li><p>Mes 6 (Entrega 6): QA, Pruebas de Integración y Preparación de
+Despliegue. Entregables: Ejecución de pruebas unitarias y de integración
+(JUnit/Testcontainers), corrección de fallos de interfaz, separación de
+variables de entorno para infraestructura y empaquetado final del
+software (el archivo .jar del backend y el directorio build estático del
+frontend).</p></li>
+</ul>
+<h2 id="plan-de-pruebas-detalle">Plan de Pruebas (Detalle)</h2>
+<ul>
+<li>Unit Tests: JUnit + Mockito para servicios y lógica de negocio.
+Cobertura objetivo mínima 65% en servicios críticos.</li>
+<li>Integration Tests: Spring Boot Test con base de datos en memoria
+(Testcontainers/Postgres). Escenarios: agendamiento concurrente,
+creación de paciente con medical record, endpoints de notificación.</li>
+<li>Pruebas de Concurrencia: Simular N usuarios intentando reservar el
+mismo bloque; validar que solo 1 transacción persiste y las demás
+reciben 409.</li>
+</ul>
+</body>
+</html>

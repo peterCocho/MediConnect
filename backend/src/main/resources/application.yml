@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Se corrige localhost por 127.0.0.1 y el puerto por 8081
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect}
+    username: ${DATABASE_USERNAME_P:postgres}
+    password: ${DB_PASSWORD_P:12345}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    locations: classpath:migration
+  # Se unifica el bloque jackson dentro del bloque spring principal
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Security
+jwt:
+  secret: ${JWT_SECRET:change_this_to_a_strong_secret}
+  expiration_minutes: ${JWT_EXP_MINUTES:60}
+
+# Bootstrap del administrador inicial (DataInitializer)
+admin:
+  setup:
+    password: ${ADMIN_SETUP_PASSWORD:admin123}
+
+# Integración n8n (Movido a la raíz, fuera de jwt)
+n8n:
+  webhook:
+    url: ${N8N_WEBHOOK_URL:http://localhost:5678/webhook/test}
+    api-key: ${N8N_API_KEY:clave_secreta_desarrollo_123}
