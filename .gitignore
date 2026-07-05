@@ -22,3 +22,6 @@ frontend/.env.local
 # =========================
 backend/target/
 backend/*.log
+AGENTS.md
+Analisis-Planeacion-Mediconnect.docx
+Analisis-Planeacion-Mediconnect
