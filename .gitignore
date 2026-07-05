@@ -1,0 +1,24 @@
+# =========================
+# WORKSPACE & IDE
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# =========================
+# FRONTEND FALLBACK 
+# (Asumiendo que frontend/ tiene su propio .gitignore, esto es una red de seguridad)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+
+# =========================
+# BACKEND FALLBACK
+# =========================
+backend/target/
+backend/*.log
