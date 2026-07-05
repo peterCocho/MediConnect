@@ -38,25 +38,28 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Disables CSRF to allow stateless authentication
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((requests) -> requests
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                )
+                .authorizeHttpRequests((requestMatcherRegistry) -> requestMatcherRegistry
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs",
-                                "/v3/api-docs/**").permitAll()
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .requestMatchers("/api/users/assign-role").hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated()  // <-- Todas las rutas restantes requieren autenticación
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-
-        // Adds the JwtFilter before UsernamePasswordAuthenticationFilter to handle stateless authentication
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 }

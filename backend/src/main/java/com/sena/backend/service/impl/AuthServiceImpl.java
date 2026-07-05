@@ -6,6 +6,7 @@ import com.sena.backend.entity.User;
 import com.sena.backend.repository.UserRepository;
 import com.sena.backend.security.JwtUtil;
 import com.sena.backend.service.AuthService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest req) throws Exception {
         User user = userRepository.findByUsername(req.getUsername()).orElseThrow(() -> new Exception("Invalid credentials"));
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) throw new Exception("Invalid credentials");
-        String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token);
+        if (!user.getIsActive()) {
+            throw new UsernameNotFoundException("Doctor inactive: " + user.getUsername());
+        }
+        else{
+            String token = jwtUtil.generateToken(user.getUsername());
+            return new AuthResponse(token);
+        }
     }
 }

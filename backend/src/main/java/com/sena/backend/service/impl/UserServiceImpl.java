@@ -1,19 +1,30 @@
 package com.sena.backend.service.impl;
 
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
+import com.sena.backend.domain.doctor.DoctorResponse;
+import com.sena.backend.domain.doctor.UpdateDoctorRequest;
 import com.sena.backend.domain.receptionist.CreateReceptionistRequest;
 import com.sena.backend.entity.Doctor;
 import com.sena.backend.entity.User;
 import com.sena.backend.entity.Role;
+
 import com.sena.backend.repository.DoctorRepository;
 import com.sena.backend.repository.RoleRepository;
 import com.sena.backend.repository.UserRepository;
 import com.sena.backend.service.UserService;
 import com.sena.backend.exception.BusinessRuleException;
 import com.sena.backend.exception.ResourceNotFoundException;
+import com.sena.backend.specification.DoctorSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -94,4 +105,69 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DoctorResponse getDoctorById(Long id) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor no encontrado con ID: " + id));
+        return mapToDoctorResponse(doctor);
+    }
+
+    @Override
+    @Transactional
+    public void updateDoctor(Long id, UpdateDoctorRequest req) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor no encontrado con ID: " + id));
+
+        doctor.setFullName(req.getFullName());
+        doctor.setEmail(req.getEmail());
+        doctor.setPhone(req.getPhone());
+        doctor.setSpecialty(req.getSpecialty());
+        doctor.setActive(req.getIsActive());
+
+        // Si el estado cambia a inactivo, también desactivamos la cuenta de usuario para bloquear el inicio de sesión
+        doctor.getUser().setActive(req.getIsActive());
+
+        doctorRepository.save(doctor);
+    }
+
+    @Override
+    @Transactional
+    public void toggleDoctorStatus(Long id, boolean status) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor no encontrado con ID: " + id));
+
+        doctor.setActive(status);
+        doctor.getUser().setActive(status);
+        doctorRepository.save(doctor);
+    }
+
+    private DoctorResponse mapToDoctorResponse(Doctor doctor) {
+        return DoctorResponse.builder()
+                .id(doctor.getId())
+                .documentNumber(doctor.getDocumentNumber())
+                .fullName(doctor.getFullName())
+                .email(doctor.getEmail())
+                .phone(doctor.getPhone())
+                .specialty(doctor.getSpecialty())
+                .isActive(doctor.isActive())
+                .username(doctor.getUser().getUsername())
+                .build();
+    }
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DoctorResponse> getAllDoctors(int page, int size, String sortBy, String fullName, String specialty, Boolean isActive) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
+
+        // Se construye la consulta dinámica basándose en los parámetros recibidos
+        Specification<Doctor> spec = DoctorSpecification.withDynamicFilters(fullName, specialty, isActive);
+
+        return doctorRepository.findAll(spec, pageable)
+                .map(this::mapToDoctorResponse);
+    }
+
 }
