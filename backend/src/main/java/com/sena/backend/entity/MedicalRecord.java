@@ -22,39 +22,35 @@ public class MedicalRecord {
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdAt;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "patient_id", nullable = false, unique = true, foreignKey = @ForeignKey(name = "fk_mr_patient"))
+    // The unique = true constraint was removed in V2
+    // Changed to ManyToOne since one patient can have multiple records with different doctors
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", nullable = false, foreignKey = @ForeignKey(name = "fk_mr_patient"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Patient patient;
 
-    public Long getId() {
-        return id;
-    }
+    // Added to match V2 migration
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id", nullable = false, foreignKey = @ForeignKey(name = "fk_mr_doctor"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Doctor doctor;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // Added fields from V2
+    @Column(name = "diagnosis", columnDefinition = "TEXT")
+    private String diagnosis;
 
-    public String getRecordNumber() {
-        return recordNumber;
-    }
+    @Column(name = "treatment", columnDefinition = "TEXT")
+    private String treatment;
 
-    public void setRecordNumber(String recordNumber) {
-        this.recordNumber = recordNumber;
-    }
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public void setPatient(Patient patient) {
-        this.patient = patient;
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
     }
 }

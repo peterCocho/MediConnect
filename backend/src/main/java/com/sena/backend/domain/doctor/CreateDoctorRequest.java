@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class CreateDoctorRequest {
 
-    // --- Credenciales de acceso ---
+    // --- Acces Credentials ---
     @NotBlank
     private String username;
 
@@ -20,7 +20,7 @@ public class CreateDoctorRequest {
     @Size(min = 8, max = 72)
     private String password;
 
-    // --- Perfil clínico (tabla doctors) ---
+    // --- Clinical Profile (table doctors) ---
     @NotBlank
     @Size(max = 20)
     private String documentNumber;

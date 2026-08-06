@@ -1,7 +1,5 @@
 package com.sena.backend.controller;
 
-import java.util.List;
-
 import com.sena.backend.domain.doctor.DoctorResponse;
 import com.sena.backend.domain.doctor.UpdateDoctorRequest;
 import com.sena.backend.domain.role.AssignRoleRequest;

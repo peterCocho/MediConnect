@@ -11,10 +11,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Security config: permits /api/auth/** and swagger, secures other endpoints.
- * Uses Argon2 for password hashing and a JwtFilter for stateless auth.
+ * Security configuration class for the application.
  */
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -38,14 +43,45 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    // Explicit CORS configuration mapping
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Define the exact origin of your frontend (e.g., localhost:3000 for React/Vite)
+        // Do not use "*" in production when credentials/tokens are involved
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+
+        // OPTIONS is mandatory for the browser's preflight requests
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // Must explicitly allow the Authorization header for JWT to pass through
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply this configuration to all endpoints
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Inject the custom CORS configuration source
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .csrf(csrf -> csrf.disable())
+
+                // Enforce stateless session policy for JWT architecture
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
                 .exceptionHandling(exception -> exception
+                        // Handles 401 Unauthorized (Invalid/Missing Token)
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 )
+
                 .authorizeHttpRequests((requestMatcherRegistry) -> requestMatcherRegistry
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
@@ -55,11 +91,10 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/users/assign-role").hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated()  // <-- Todas las rutas restantes requieren autenticación
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }

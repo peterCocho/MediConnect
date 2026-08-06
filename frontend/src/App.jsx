@@ -6,6 +6,7 @@ import { useAuth } from './context/AuthContext'; // Contexto que maneja el estad
 import Dashboard from './pages/Dashboard';
 import DoctorView from './pages/DoctorView';
 import ReceptionistView from './pages/ReceptionistView';
+import Layout from './components/Layout';
 
 const ProtectedRoute = ({ element, allowedRoles }) => {
     const { user, isLoading } = useAuth();
@@ -40,6 +41,7 @@ function App() {
 export default App;
 
 function Login() {
+  
   // Implement login logic here
   return (
     <div>
@@ -47,6 +49,8 @@ function Login() {
       <input type="text" placeholder="Username" />
       <input type="password" placeholder="Password" />
       <button>Submit</button>
+      <Layout />
     </div>
+    
   );
 }

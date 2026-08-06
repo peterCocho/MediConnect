@@ -1,6 +1,6 @@
 package com.sena.backend.controller;
 
-import com.sena.backend.domain.NotificationCallbackRequestDTO;
+import com.sena.backend.domain.notification.NotificationCallbackRequestDTO;
 import com.sena.backend.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/webhooks/n8n")
 public class WebhookController {
+    
 
     private final NotificationService notificationService;
 

@@ -1,6 +1,8 @@
 package com.sena.backend.repository;
 
 import com.sena.backend.entity.Consultation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ConsultationRepository extends JpaRepository<Consultation, Long> {
 
@@ -21,4 +24,9 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
     List<Consultation> findOverlappingForDoctorForUpdate(@Param("doctorId") Long doctorId,
                                                          @Param("from") OffsetDateTime from,
                                                          @Param("to") OffsetDateTime to);
+
+    Page<Consultation> findByDoctorId(Long doctorId, Pageable pageable);
+
+    Optional<Consultation> findByAppointmentId(Long appointmentId);
+
 }

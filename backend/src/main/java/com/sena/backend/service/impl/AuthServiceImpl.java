@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(req.getUsername()).orElseThrow(() -> new Exception("Invalid credentials"));
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) throw new Exception("Invalid credentials");
         if (!user.getIsActive()) {
-            throw new UsernameNotFoundException("Doctor inactive: " + user.getUsername());
+            throw new UsernameNotFoundException("User account is inactive: " + user.getUsername());
         }
         else{
             String token = jwtUtil.generateToken(user.getUsername());

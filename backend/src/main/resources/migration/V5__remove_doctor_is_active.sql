@@ -1,0 +1,1 @@
+ALTER TABLE doctors DROP COLUMN IF EXISTS is_active;

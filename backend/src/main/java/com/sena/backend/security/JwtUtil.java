@@ -11,10 +11,12 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
 /**
- * Minimal JWT util using HMAC-SHA256. Not a full-featured library replacement but sufficient for MVP.
- * Uses base64url encoding and a secret from application properties. Keep secret secure in env.
+ * Utility component for JSON Web Token (JWT) management.
+ * <p>
+ * This service facilitates the generation and validation of tokens using
+ * the HMAC-SHA256 algorithm. It provides the necessary abstraction for
+ * securing stateless communication within the application's authentication flow.
  */
 @Component
 public class JwtUtil {

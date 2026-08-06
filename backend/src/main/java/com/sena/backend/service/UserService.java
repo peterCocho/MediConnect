@@ -1,6 +1,5 @@
 package com.sena.backend.service;
 
-import java.util.List;
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
 import com.sena.backend.domain.doctor.DoctorResponse;
 import com.sena.backend.domain.doctor.UpdateDoctorRequest;

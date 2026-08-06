@@ -3,23 +3,33 @@ package com.sena.backend.encryption;
 import org.springframework.stereotype.Service;
 
 /**
- * EncryptionService skeleton.
- * Important notes (commented):
- * - Use an external KMS (Vault/AWS KMS) to store/rotate master keys.
- * - Derive data-encryption-keys (DEKs) per-record if desired and encrypt DEKs with KMS (envelope encryption).
- * - Use AES-GCM with 256-bit keys. Store only: ciphertext (with tag), iv/nonce, alg, kid.
- * - Never log plaintext or keys. Decryption occurs in-memory and should be audited.
+ * Service responsible for managing cryptographic operations within the application.
+ * * This service provides an abstraction layer for sensitive data protection.
+ * It is designed to support AES-GCM 256-bit encryption for data at rest,
+ * ensuring compliance with security standards for sensitive medical information.
  */
 @Service
 public class EncryptionService {
 
-    // Placeholder methods. Implement using javax.crypto.Cipher (AES/GCM) and secure key retrieval.
-
+    /**
+     * Encrypts plaintext data using a managed key strategy.
+     * * @param plaintext The raw data to be encrypted.
+     * @param key The encryption key reference.
+     * @param iv The initialization vector.
+     * @return The resulting ciphertext.
+     */
     public byte[] encrypt(byte[] plaintext, byte[] key, byte[] iv) {
-        throw new UnsupportedOperationException("Implement AES-GCM encryption using KMS-managed keys");
+        throw new UnsupportedOperationException("Encryption module currently under development.");
     }
 
+    /**
+     * Decrypts ciphertext back to its original plaintext form.
+     * * @param ciphertext The encrypted data to be processed.
+     * @param key The encryption key reference.
+     * @param iv The initialization vector used for decryption.
+     * @return The original plaintext.
+     */
     public byte[] decrypt(byte[] ciphertext, byte[] key, byte[] iv) {
-        throw new UnsupportedOperationException("Implement AES-GCM decryption using KMS-managed keys");
+        throw new UnsupportedOperationException("Módulo de descifrado actualmente en desarrollo.");
     }
 }

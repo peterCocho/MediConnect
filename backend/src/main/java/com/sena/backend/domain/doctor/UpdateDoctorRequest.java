@@ -1,4 +1,3 @@
-// 2. src/main/java/com/sena/backend/dto/UpdateDoctorRequest.java
 package com.sena.backend.domain.doctor;
 
 import jakarta.validation.constraints.Email;

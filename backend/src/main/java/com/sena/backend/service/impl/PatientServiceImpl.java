@@ -1,4 +1,3 @@
-// Archivo 2: src/main/java/com/sena/backend/service/impl/PatientServiceImpl.java
 package com.sena.backend.service.impl;
 
 import com.sena.backend.domain.patient.CreatePatientRequest;
@@ -95,7 +94,7 @@ public class PatientServiceImpl implements PatientService {
                 .fullName(patient.getFullName())
                 .phone(patient.getPhone())
                 .birthDate(patient.getBirthDate())
-                .isActive(patient.isActive())
+                .isActive(patient.getIsActive())
                 .build();
     }
 }

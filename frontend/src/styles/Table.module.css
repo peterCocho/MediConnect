@@ -1,0 +1,94 @@
+/* Contenedor principal de la tabla y el botón */
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Botón Nuevo Usuario */
+.addButton {
+    background-color: #3b82f6; /* Azul primario */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    margin-bottom: 20px;
+}
+.addButton:hover {
+    background-color: #2563eb;
+}
+
+/* Tabla */
+.userTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+/* Encabezados (thead) */
+.userTable th {
+    background-color: #f9fafb;
+    color: #4b5563;
+    padding: 12px 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Filas (tbody) */
+.userTable td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.userTable tr:hover {
+    background-color: #f9fafb; /* Efecto hover en la fila */
+}
+
+/* Estado (Badge) */
+.estadoCell {
+    font-weight: 600;
+}
+.activo {
+    color: white;
+    background-color: #10b981; /* Verde */
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.8rem;
+}
+.inactivo {
+    color: white;
+    background-color: #ef4444; /* Rojo */
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.8rem;
+}
+
+/* Botones de Acción en la tabla */
+.actionButton {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.actionButton:hover {
+    background-color: #2563eb;
+}
+
+/* Mensajes de carga */
+.loading {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #6b7280;
+}

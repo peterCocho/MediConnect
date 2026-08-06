@@ -1,0 +1,87 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px; /* Espacio entre el header y la tabla */
+}
+
+/* Búsqueda */
+.searchBarContainer {
+    display: flex;
+    align-items: center;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    padding: 0 15px;
+    margin-right: 20px;
+}
+.searchIcon {
+    margin-right: 10px;
+    color: #6b7280;
+}
+.searchInput {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 300px; /* Ajustar ancho */
+}
+
+/* Acciones y Perfil */
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.actionButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #6b7280;
+    padding: 5px;
+    transition: color 0.1s;
+}
+.actionButton:hover {
+    color: #3b82f6;
+}
+
+/* Dropdown de Usuario */
+.userDropdown {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+.userName {
+    font-weight: 600;
+    color: #1f2937;
+}
+.role {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Botón de Salida */
+.logoutButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #ef4444; /* Rojo para logout */
+}

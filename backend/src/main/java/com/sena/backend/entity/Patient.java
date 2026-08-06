@@ -30,4 +30,8 @@ public class Patient {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    public boolean getIsActive() {
+        return isActive;
+    }
 }

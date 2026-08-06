@@ -70,7 +70,6 @@ public class UserServiceImpl implements UserService {
                 .email(req.getEmail())
                 .phone(req.getPhone())
                 .specialty(req.getSpecialty())
-                .isActive(true)
                 .user(user)
                 .build();
 
@@ -124,8 +123,6 @@ public class UserServiceImpl implements UserService {
         doctor.setEmail(req.getEmail());
         doctor.setPhone(req.getPhone());
         doctor.setSpecialty(req.getSpecialty());
-        doctor.setActive(req.getIsActive());
-
         // Si el estado cambia a inactivo, también desactivamos la cuenta de usuario para bloquear el inicio de sesión
         doctor.getUser().setActive(req.getIsActive());
 
@@ -138,7 +135,6 @@ public class UserServiceImpl implements UserService {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor no encontrado con ID: " + id));
 
-        doctor.setActive(status);
         doctor.getUser().setActive(status);
         doctorRepository.save(doctor);
     }
@@ -151,7 +147,6 @@ public class UserServiceImpl implements UserService {
                 .email(doctor.getEmail())
                 .phone(doctor.getPhone())
                 .specialty(doctor.getSpecialty())
-                .isActive(doctor.isActive())
                 .username(doctor.getUser().getUsername())
                 .build();
     }

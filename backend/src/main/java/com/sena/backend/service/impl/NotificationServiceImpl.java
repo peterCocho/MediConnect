@@ -1,6 +1,6 @@
 package com.sena.backend.service.impl;
 
-import com.sena.backend.domain.NotificationCallbackRequestDTO;
+import com.sena.backend.domain.notification.NotificationCallbackRequestDTO; // Arreglar import si es necesario
 import com.sena.backend.entity.Notification;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.NotificationRepository;
@@ -22,11 +22,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void updateNotificationStatus(NotificationCallbackRequestDTO dto) throws Exception {
-        Notification n = notificationRepository.findById(dto.getNotification_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + dto.getNotification_id()));
+        // CORRECCIÓN: Usar getNotificationId() generado por Lombok, no getNotification_id()
+        Notification n = notificationRepository.findById(dto.getNotificationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + dto.getNotificationId()));
 
+        // CORRECCIÓN: Usar getters estándar
         n.setStatus(dto.getStatus());
-        n.setProviderId(dto.getProvider_id());
+        n.setProviderId(dto.getProviderId()); // getProviderId()
         n.setUpdatedAt(OffsetDateTime.now());
 
         notificationRepository.save(n);

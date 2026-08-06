@@ -1,4 +1,3 @@
-// 1. src/main/java/com/sena/backend/dto/DoctorResponse.java
 package com.sena.backend.domain.doctor;
 
 import lombok.Builder;
