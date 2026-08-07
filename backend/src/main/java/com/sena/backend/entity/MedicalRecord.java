@@ -6,7 +6,8 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "medical_records")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,7 +25,7 @@ public class MedicalRecord {
 
     // The unique = true constraint was removed in V2
     // Changed to ManyToOne since one patient can have multiple records with different doctors
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false, foreignKey = @ForeignKey(name = "fk_mr_patient"))
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

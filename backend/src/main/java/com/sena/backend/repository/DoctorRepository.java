@@ -28,4 +28,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long>, JpaSpecif
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT d FROM Doctor d WHERE d.id = :id")
     Optional<Doctor> findByIdWithLock(@Param("id") Long id);
+
+    Optional<Doctor> findByUserUsername(String username);
 }

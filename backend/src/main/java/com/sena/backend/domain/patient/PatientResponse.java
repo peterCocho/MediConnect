@@ -17,4 +17,7 @@ public class PatientResponse {
     private String phone;
     private LocalDate birthDate;
     private boolean isActive;
+
+    // Required to fetch the clinical timeline from the frontend
+    private Long medicalRecordId;
 }

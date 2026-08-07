@@ -6,7 +6,8 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "patients")
-@Data
+@Getter // Explicitly use Getter instead of @Data
+@Setter // Explicitly use Setter instead of @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,4 +35,11 @@ public class Patient {
     public boolean getIsActive() {
         return isActive;
     }
+
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MedicalRecord medicalRecord;
+
+
+
+
 }

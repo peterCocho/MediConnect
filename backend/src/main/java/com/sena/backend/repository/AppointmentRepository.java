@@ -21,7 +21,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Fetch paginated appointments within a specific start time range
     Page<Appointment> findByStartTimeBetween(OffsetDateTime start, OffsetDateTime end, Pageable pageable);
 
-    List<Appointment> findByPatientIdOrderByStartTimeDesc(Long patientId);
+    // Checks if a patient has appointments in a specific status
+    boolean existsByPatientIdAndStatus(Long patientId, String status);
 
     // Fetch all appointments for a specific doctor
     List<Appointment> findByDoctorIdOrderByStartTimeDesc(Long doctorId);

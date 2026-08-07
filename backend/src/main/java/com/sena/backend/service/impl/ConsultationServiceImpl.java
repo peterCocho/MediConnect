@@ -1,86 +1,115 @@
 package com.sena.backend.service.impl;
 
+import com.sena.backend.domain.consultation.ConsultationResponseDTO;
 import com.sena.backend.domain.consultation.ExecuteConsultationRequestDTO;
 import com.sena.backend.entity.Consultation;
-import com.sena.backend.entity.Appointment;
+import com.sena.backend.entity.Doctor;
 import com.sena.backend.exception.BusinessRuleException;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.ConsultationRepository;
+import com.sena.backend.repository.DoctorRepository;
 import com.sena.backend.service.ConsultationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ConsultationServiceImpl implements ConsultationService {
 
     private final ConsultationRepository consultationRepository;
-
-    public ConsultationServiceImpl(ConsultationRepository consultationRepository) {
-        this.consultationRepository = consultationRepository;
-    }
+    private final DoctorRepository doctorRepository;
 
     @Override
     @Transactional
-    public Consultation executeConsultation(Long id, ExecuteConsultationRequestDTO dto, Long authenticatedDoctorId) {
+    public ConsultationResponseDTO executeConsultation(Long consultationId, ExecuteConsultationRequestDTO request, Long doctorId) {
+        Consultation consultation = consultationRepository.findById(consultationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta no encontrada con ID: " + consultationId));
 
-        // Validation of existence and ownership happens together
-        Consultation consultation = getConsultationByIdAndDoctorId(id, authenticatedDoctorId);
+        // Correct IDOR resolution: Find Doctor directly by doctorId
+        Doctor requestingDoctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil de médico no encontrado con ID: " + doctorId));
 
+        if (!consultation.getDoctor().getId().equals(requestingDoctor.getId())) {
+            throw new AccessDeniedException("No tiene permisos para ejecutar una consulta que no le ha sido asignada");
+        }
+
+        // Business Rule: Standardized domain exception for status validation
         if (!"SCHEDULED".equals(consultation.getStatus())) {
-            throw new BusinessRuleException("Only scheduled consultations can be executed.");
+            throw new BusinessRuleException("Solo las consultas en estado SCHEDULED pueden ser ejecutadas");
         }
 
-        if (OffsetDateTime.now().isBefore(consultation.getConsultationDate())) {
-            throw new BusinessRuleException("Cannot execute a consultation before its scheduled time.");
-        }
+        // Mutate clinical data
+        consultation.setSystolicPressure(request.getSystolicPressure());
+        consultation.setDiastolicPressure(request.getDiastolicPressure());
+        consultation.setHeartRate(request.getHeartRate());
+        consultation.setWeight(request.getWeight());
+        consultation.setIcd10Code(request.getIcd10Code());
+        consultation.setReasonForVisit(request.getReasonForVisit());
+        consultation.setClinicalNotes(request.getClinicalNotes());
+        consultation.setManagementPlan(request.getManagementPlan());
 
-        if (dto.getDiastolicPressure() >= dto.getSystolicPressure()) {
-            throw new BusinessRuleException("Diastolic pressure cannot be greater than or equal to systolic pressure.");
-        }
-
-        // Update clinical fields
-        consultation.setSystolicPressure(dto.getSystolicPressure());
-        consultation.setDiastolicPressure(dto.getDiastolicPressure());
-        consultation.setHeartRate(dto.getHeartRate());
-        consultation.setWeight(dto.getWeight());
-        consultation.setIcd10Code(dto.getIcd10Code());
-        consultation.setReasonForVisit(dto.getReasonForVisit());
-        consultation.setClinicalNotes(dto.getClinicalNotes());
-        consultation.setManagementPlan(dto.getManagementPlan());
-
-        // Update Consultation status
+        // Seal consultation
         consultation.setStatus("COMPLETED");
 
-        // Sync the linked Appointment status within the same transaction to prevent data anomalies
-        Appointment appointment = consultation.getAppointment();
-        if (appointment != null) {
-            appointment.setStatus("COMPLETED");
-        }
-
-        return consultationRepository.save(consultation);
+        return mapToDTO(consultationRepository.save(consultation));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Consultation getConsultationByIdAndDoctorId(Long id, Long doctorId) {
+    public List<ConsultationResponseDTO> getPatientTimeline(Long medicalRecordId) {
+        return consultationRepository.findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(medicalRecordId, "COMPLETED")
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ConsultationResponseDTO getConsultationByIdAndDoctorId(Long id, Long doctorId) {
         Consultation consultation = consultationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Consultation not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta no encontrada con ID: " + id));
 
-        // Hard enforcement of clinical ownership
         if (!consultation.getDoctor().getId().equals(doctorId)) {
-            throw new BusinessRuleException("Unauthorized to access a consultation assigned to another doctor.");
+            throw new AccessDeniedException("Acceso denegado a esta consulta");
         }
 
-        return consultation;
+        return mapToDTO(consultation);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Consultation> getConsultationsByDoctorId(Long doctorId, Pageable pageable) {
-        return consultationRepository.findByDoctorId(doctorId, pageable);
+    public Page<ConsultationResponseDTO> getConsultationsByDoctorId(Long doctorId, Pageable pageable) {
+        return consultationRepository.findByDoctorId(doctorId, pageable)
+                .map(this::mapToDTO);
+    }
+
+    private ConsultationResponseDTO mapToDTO(Consultation entity) {
+        Long docId = (entity.getDoctor() != null) ? entity.getDoctor().getId() : null;
+        Long recId = (entity.getMedicalRecord() != null) ? entity.getMedicalRecord().getId() : null;
+        Long apptId = (entity.getAppointment() != null) ? entity.getAppointment().getId() : null;
+
+        return ConsultationResponseDTO.builder()
+                .id(entity.getId())
+                .appointmentId(apptId)
+                .consultationDate(entity.getConsultationDate())
+                .status(entity.getStatus())
+                .doctorId(docId)
+                .medicalRecordId(recId)
+                .systolicPressure(entity.getSystolicPressure())
+                .diastolicPressure(entity.getDiastolicPressure())
+                .heartRate(entity.getHeartRate())
+                .weight(entity.getWeight())
+                .icd10Code(entity.getIcd10Code())
+                .reasonForVisit(entity.getReasonForVisit())
+                .clinicalNotes(entity.getClinicalNotes())
+                .managementPlan(entity.getManagementPlan())
+                .build();
     }
 }

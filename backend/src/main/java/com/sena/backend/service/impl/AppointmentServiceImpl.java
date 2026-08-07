@@ -16,7 +16,6 @@ import com.sena.backend.repository.MedicalRecordRepository;
 import com.sena.backend.repository.PatientRepository;
 import com.sena.backend.service.AppointmentService;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,8 +29,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
-
-    // Dependencies required to link the clinical domain
     private final MedicalRecordRepository medicalRecordRepository;
     private final ConsultationRepository consultationRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -68,22 +65,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new BusinessRuleException("No se puede agendar: El médico se encuentra inactivo en el sistema.");
         }
 
-        // 2. Check for time overlaps. Safe from race conditions due to the lock above.
+        // 2. Check for time overlaps. Safe from race conditions due to patient/doctor locks.
         if (appointmentRepository.hasOverlappingAppointments(doctorId, start, end)) {
             throw new BusinessRuleException("El médico seleccionado ya tiene una cita que se cruza con este horario.");
         }
 
-        MedicalRecord mr = medicalRecordRepository.findByPatientAndDoctor(patient, doctor)
-                .orElseGet(() -> {
-                    MedicalRecord newRecord = new MedicalRecord();
-                    newRecord.setPatient(patient);
-                    newRecord.setDoctor(doctor);
-                    newRecord.setRecordNumber("MR-" + patient.getId() + "-" + doctor.getId());
-                    newRecord.setDiagnosis("Pending");
-                    return medicalRecordRepository.save(newRecord);
-                });
+        // Retrieve the patient's unique medical record (1:1 relationship)
+        MedicalRecord mr = medicalRecordRepository.findByPatientId(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expediente médico no encontrado para el paciente con id: " + patientId));
 
-        // 3. Save without try-catch loops. The DB lock guarantees consistency.
+        // 3. Save appointment
         Appointment ap = new Appointment();
         ap.setPatientId(patientId);
         ap.setDoctorId(doctorId);
@@ -92,6 +83,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         ap.setStatus("BOOKED");
         Appointment savedAppointment = appointmentRepository.save(ap);
 
+        // 4. Create and link consultation to the unique medical record
         Consultation c = new Consultation();
         c.setConsultationDate(start);
         c.setStatus("SCHEDULED");

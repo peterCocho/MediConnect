@@ -2,48 +2,39 @@ package com.sena.backend.domain.consultation;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-
 import java.math.BigDecimal;
 
 @Data
 public class ExecuteConsultationRequestDTO {
 
-    // Added mandatory appointment link.
-    // A consultation cannot be executed in a vacuum; it requires a scheduled appointment.
-    @NotNull(message = "Appointment ID is mandatory")
-    private Long appointmentId;
-
-    @NotNull
-    @Min(1)
-    @Max(299)
-    @Positive(message = "Systolic pressure must be positive")
+    @NotNull(message = "La presión sistólica es obligatoria")
+    @Min(value = 1, message = "La presión sistólica debe ser mayor a 0")
+    @Max(value = 299, message = "La presión sistólica excede el límite permitido")
     private Integer systolicPressure;
 
-    @NotNull
-    @Min(1)
-    @Max(199)
-    @Positive(message = "Diastolic pressure must be positive")
+    @NotNull(message = "La presión diastólica es obligatoria")
+    @Min(value = 1, message = "La presión diastólica debe ser mayor a 0")
+    @Max(value = 199, message = "La presión diastólica excede el límite permitido")
     private Integer diastolicPressure;
 
-    @NotNull
-    @Min(1)
-    @Max(299)
-    @Positive(message = "Heart rate must be positive")
+    @NotNull(message = "La frecuencia cardíaca es obligatoria")
+    @Min(value = 1, message = "La frecuencia cardíaca debe ser mayor a 0")
+    @Max(value = 299, message = "La frecuencia cardíaca excede el límite permitido")
     private Integer heartRate;
 
-    @NotNull
-    @DecimalMin(value = "0.01", inclusive = true)
+    @NotNull(message = "El peso es obligatorio")
+    @DecimalMin(value = "0.01", message = "El peso debe ser mayor a 0")
     private BigDecimal weight;
 
     @Size(max = 10)
-    @NotBlank(message = "ICD-10 code is mandatory")
+    @NotBlank(message = "El código CIE-10 es obligatorio")
     private String icd10Code;
 
-    @NotBlank(message = "Reason for visit is mandatory")
+    @NotBlank(message = "El motivo de consulta es obligatorio")
     private String reasonForVisit;
 
     private String clinicalNotes;
 
-    @NotBlank(message = "Management plan is mandatory")
+    @NotBlank(message = "El plan de manejo es obligatorio")
     private String managementPlan;
 }

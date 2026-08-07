@@ -1,5 +1,6 @@
 package com.sena.backend.repository;
 
+import com.sena.backend.domain.report.DiagnosisCountProjection;
 import com.sena.backend.entity.Consultation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,4 +30,24 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
 
     Optional<Consultation> findByAppointmentId(Long appointmentId);
 
+    List<Consultation> findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(Long medicalRecordId, String status);
+
+    // Count volume of consultations within a date range
+    long countByStatusAndConsultationDateBetween(String status, OffsetDateTime startDate, OffsetDateTime endDate);
+
+    // Analytical grouping query for ICD-10 prevalence excluding null or empty codes
+    @Query("SELECT c.icd10Code AS icd10Code, COUNT(c) AS count " +
+            "FROM Consultation c " +
+            "WHERE c.status = :status " +
+            "AND c.consultationDate >= :startDate " +
+            "AND c.consultationDate <= :endDate " +
+            "AND c.icd10Code IS NOT NULL " +
+            "AND TRIM(c.icd10Code) != '' " +
+            "GROUP BY c.icd10Code " +
+            "ORDER BY count DESC")
+    List<DiagnosisCountProjection> findTopDiagnosesByDateRange(
+            @Param("status") String status,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
+            Pageable pageable);
 }

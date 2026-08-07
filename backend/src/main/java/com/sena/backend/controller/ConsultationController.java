@@ -2,7 +2,6 @@ package com.sena.backend.controller;
 
 import com.sena.backend.domain.consultation.ConsultationResponseDTO;
 import com.sena.backend.domain.consultation.ExecuteConsultationRequestDTO;
-import com.sena.backend.entity.Consultation;
 import com.sena.backend.security.CustomUserDetails;
 import com.sena.backend.service.ConsultationService;
 import jakarta.validation.Valid;
@@ -13,9 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/consultations")
-// Protect the entire controller at the class level based on your rule
 @PreAuthorize("hasRole('DOCTOR')")
 public class ConsultationController {
 
@@ -31,15 +31,9 @@ public class ConsultationController {
             @Valid @RequestBody ExecuteConsultationRequestDTO request,
             Authentication authentication
     ) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long authenticatedDoctorId = userDetails.getDoctorId();
-
-        if (authenticatedDoctorId == null) {
-            throw new IllegalStateException("The authenticated user does not have a valid Doctor ID linked.");
-        }
-
-        Consultation consultation = consultationService.executeConsultation(id, request, authenticatedDoctorId);
-        return ResponseEntity.ok(convertToResponseDTO(consultation));
+        Long authenticatedDoctorId = extractDoctorId(authentication);
+        ConsultationResponseDTO response = consultationService.executeConsultation(id, request, authenticatedDoctorId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -47,11 +41,9 @@ public class ConsultationController {
             @PathVariable Long id,
             Authentication authentication
     ) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long authenticatedDoctorId = userDetails.getDoctorId();
-
-        Consultation consultation = consultationService.getConsultationByIdAndDoctorId(id, authenticatedDoctorId);
-        return ResponseEntity.ok(convertToResponseDTO(consultation));
+        Long authenticatedDoctorId = extractDoctorId(authentication);
+        ConsultationResponseDTO response = consultationService.getConsultationByIdAndDoctorId(id, authenticatedDoctorId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
@@ -59,33 +51,28 @@ public class ConsultationController {
             Authentication authentication,
             Pageable pageable
     ) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long authenticatedDoctorId = userDetails.getDoctorId();
+        Long authenticatedDoctorId = extractDoctorId(authentication);
+        Page<ConsultationResponseDTO> consultations = consultationService.getConsultationsByDoctorId(authenticatedDoctorId, pageable);
+        return ResponseEntity.ok(consultations);
+    }
 
-        if (authenticatedDoctorId == null) {
+    // HU-07: Immutable clinical timeline endpoint
+    @GetMapping("/patient-timeline/{medicalRecordId}")
+    public ResponseEntity<List<ConsultationResponseDTO>> getPatientTimeline(
+            @PathVariable Long medicalRecordId
+    ) {
+        List<ConsultationResponseDTO> timeline = consultationService.getPatientTimeline(medicalRecordId);
+        return ResponseEntity.ok(timeline);
+    }
+
+    private Long extractDoctorId(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long doctorId = userDetails.getDoctorId();
+
+        if (doctorId == null) {
             throw new IllegalStateException("The authenticated user does not have a valid Doctor ID linked.");
         }
 
-        Page<Consultation> consultations = consultationService.getConsultationsByDoctorId(authenticatedDoctorId, pageable);
-        return ResponseEntity.ok(consultations.map(this::convertToResponseDTO));
-    }
-
-    private ConsultationResponseDTO convertToResponseDTO(Consultation consultation) {
-        return ConsultationResponseDTO.builder()
-                .id(consultation.getId())
-                .appointmentId(consultation.getAppointment() != null ? consultation.getAppointment().getId() : null)
-                .consultationDate(consultation.getConsultationDate())
-                .status(consultation.getStatus())
-                .systolicPressure(consultation.getSystolicPressure())
-                .diastolicPressure(consultation.getDiastolicPressure())
-                .heartRate(consultation.getHeartRate())
-                .weight(consultation.getWeight())
-                .icd10Code(consultation.getIcd10Code())
-                .reasonForVisit(consultation.getReasonForVisit())
-                .clinicalNotes(consultation.getClinicalNotes())
-                .managementPlan(consultation.getManagementPlan())
-                .doctorId(consultation.getDoctor() != null ? consultation.getDoctor().getId() : null)
-                .medicalRecordId(consultation.getMedicalRecord() != null ? consultation.getMedicalRecord().getId() : null)
-                .build();
+        return doctorId;
     }
 }
