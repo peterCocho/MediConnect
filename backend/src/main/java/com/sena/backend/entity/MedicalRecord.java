@@ -3,6 +3,7 @@ package com.sena.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "medical_records")
@@ -26,4 +27,14 @@ public class MedicalRecord {
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false, unique = true, foreignKey = @ForeignKey(name = "fk_mr_patient"))
     private Patient patient;
+
+    @PrePersist
+    public void prePersist() {
+        if (recordNumber == null || recordNumber.isBlank()) {
+            recordNumber = "MR-" + UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+    }
 }

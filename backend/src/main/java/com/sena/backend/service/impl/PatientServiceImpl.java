@@ -18,6 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
@@ -41,10 +44,11 @@ public class PatientServiceImpl implements PatientService {
                 .isActive(true)
                 .build();
 
-// 2 & 3. Provision the empty medical record using Builder
+        // 2 & 3. Provision the empty medical record using Builder
         MedicalRecord medicalRecord = MedicalRecord.builder()
+                .recordNumber(generateRecordNumber())
+                .createdAt(OffsetDateTime.now())
                 .patient(patient)
-                // TODO: Assign any other non-null required fields here (like recordNumber)
                 .build();
 
         patient.setMedicalRecord(medicalRecord);
@@ -122,5 +126,9 @@ public class PatientServiceImpl implements PatientService {
                 .isActive(patient.getIsActive())
                 .medicalRecordId(recordId) // Propagated to DTO
                 .build();
+    }
+
+    private String generateRecordNumber() {
+        return "MR-" + UUID.randomUUID();
     }
 }
