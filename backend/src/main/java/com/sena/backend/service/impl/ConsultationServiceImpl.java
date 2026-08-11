@@ -1,5 +1,6 @@
 package com.sena.backend.service.impl;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.domain.consultation.ConsultationResponseDTO;
 import com.sena.backend.domain.consultation.ExecuteConsultationRequestDTO;
 import com.sena.backend.entity.Consultation;
@@ -56,7 +57,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultation.setManagementPlan(request.getManagementPlan());
 
         // Seal consultation
-        consultation.setStatus("COMPLETED");
+        // Seal consultation and synchronize appointment state
+        consultation.setStatus(AppointmentStatus.COMPLETED);
+
+        if (consultation.getAppointment() != null) {
+            consultation.getAppointment().setStatus(AppointmentStatus.COMPLETED);
+        }
 
         return mapToDTO(consultationRepository.save(consultation));
     }
@@ -99,7 +105,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .id(entity.getId())
                 .appointmentId(apptId)
                 .consultationDate(entity.getConsultationDate())
-                .status(entity.getStatus())
+                .status(entity.getStatus().name())
                 .doctorId(docId)
                 .medicalRecordId(recId)
                 .systolicPressure(entity.getSystolicPressure())

@@ -103,7 +103,7 @@ public class AppointmentController {
                 .doctorId(appointment.getDoctorId())
                 .startTime(appointment.getStartTime())
                 .endTime(appointment.getEndTime())
-                .status(appointment.getStatus())
+                .status(appointment.getStatus().name())
                 .cancellationReason(appointment.getCancellationReason())
                 .build();
     }

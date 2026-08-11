@@ -1,5 +1,6 @@
 package com.sena.backend.entity;
 
+import com.sena.backend.domain.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.OffsetDateTime;
@@ -28,8 +29,9 @@ public class Appointment {
     @Column(name = "end_time", nullable = false)
     private OffsetDateTime endTime;
 
-    @Column(nullable = false)
-    private String status; // BOOKED, COMPLETED, CANCELED
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private AppointmentStatus status;
 
     @Column(name = "cancellation_reason")
     private String cancellationReason;

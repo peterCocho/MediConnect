@@ -1,5 +1,6 @@
 package com.sena.backend.repository;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.entity.Appointment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +22,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Fetch paginated appointments within a specific start time range
     Page<Appointment> findByStartTimeBetween(OffsetDateTime start, OffsetDateTime end, Pageable pageable);
 
-    // Checks if a patient has appointments in a specific status
-    boolean existsByPatientIdAndStatus(Long patientId, String status);
+    // NUEVO: Reemplaza a existsByPatientIdAndStatus para soportar múltiples estados a la vez
+    boolean existsByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
 
     // Fetch all appointments for a specific doctor
     List<Appointment> findByDoctorIdOrderByStartTimeDesc(Long doctorId);
@@ -33,16 +34,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Fetch paginated appointments for a specific doctor
     Page<Appointment> findByDoctorId(Long doctorId, Pageable pageable);
 
-
+    // ACTUALIZADO: Compara contra la constante del Enum directamente en HQL
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Appointment a " +
             "WHERE a.doctorId = :doctorId " +
             "AND a.startTime < :endTime " +
             "AND a.endTime > :startTime " +
-            "AND a.status != 'CANCELED'")
+            "AND a.status != com.sena.backend.domain.AppointmentStatus.CANCELED")
     boolean hasOverlappingAppointments(@Param("doctorId") Long doctorId,
                                        @Param("startTime") OffsetDateTime startTime,
                                        @Param("endTime") OffsetDateTime endTime);
 
-    // Retrieves appointments filtered by an exact status within a specific time window
-    List<Appointment> findByStatusAndStartTimeBetween(String status, OffsetDateTime start, OffsetDateTime end);
+    // ACTUALIZADO: El parámetro de estado ahora es un AppointmentStatus
+    List<Appointment> findByStatusAndStartTimeBetween(AppointmentStatus status, OffsetDateTime start, OffsetDateTime end);
 }

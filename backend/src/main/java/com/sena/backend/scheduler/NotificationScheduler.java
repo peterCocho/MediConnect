@@ -1,6 +1,7 @@
 package com.sena.backend.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.entity.Appointment;
 import com.sena.backend.entity.Notification;
 import com.sena.backend.repository.AppointmentRepository;
@@ -49,8 +50,9 @@ public class NotificationScheduler {
         OffsetDateTime tomorrowEnd = tomorrowStart.plusDays(1);
 
         // Busca citas agendadas ('BOOKED') para mañana
+        // Busca citas confirmadas ('SCHEDULED') para mañana
         List<Appointment> upcomingAppointments = appointmentRepository
-                .findByStatusAndStartTimeBetween("BOOKED", tomorrowStart, tomorrowEnd);
+                .findByStatusAndStartTimeBetween(AppointmentStatus.SCHEDULED, tomorrowStart, tomorrowEnd);
 
         for (Appointment app : upcomingAppointments) {
             // Lógica para evitar reenvíos si ya existe una notificación de recordatorio para esta consulta

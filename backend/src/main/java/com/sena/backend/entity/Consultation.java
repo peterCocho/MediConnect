@@ -1,5 +1,6 @@
 package com.sena.backend.entity;
 
+import com.sena.backend.domain.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -20,8 +21,9 @@ public class Consultation {
     @Column(name = "consultation_date", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime consultationDate;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    private AppointmentStatus status;
 
     // Structured Core
     @Column(name = "systolic_pressure")

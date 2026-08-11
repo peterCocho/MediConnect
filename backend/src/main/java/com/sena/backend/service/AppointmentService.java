@@ -22,4 +22,6 @@ public interface AppointmentService {
     Page<Appointment> getDoctorAppointments(Long doctorId, Pageable pageable);
 
     Page<Appointment> getAllAppointments(OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable);
+
+    Appointment confirmAppointment(Long appointmentId);
 }

@@ -1,5 +1,6 @@
 package com.sena.backend.service.impl;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.domain.patient.CreatePatientRequest;
 import com.sena.backend.domain.patient.PatientResponse;
 import com.sena.backend.domain.patient.UpdatePatientRequest;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -102,10 +104,15 @@ public class PatientServiceImpl implements PatientService {
 
         // Validation for deactivation scenario
         if (!status) {
-            boolean hasPendingAppointments = appointmentRepository.existsByPatientIdAndStatus(id, "SCHEDULED");
+            // ACTUALIZADO: Verifica tanto SCHEDULED como PENDING_CONFIRMATION
+            boolean hasPendingAppointments = appointmentRepository.existsByPatientIdAndStatusIn(
+                    id,
+                    List.of(AppointmentStatus.PENDING_CONFIRMATION, AppointmentStatus.SCHEDULED)
+            );
 
             if (hasPendingAppointments) {
-                throw new BusinessRuleException("No se puede desactivar al paciente porque tiene citas programadas pendientes. Cancélelas primero.");
+                // ACTUALIZADO: El mensaje refleja la nueva regla de negocio
+                throw new BusinessRuleException("No se puede desactivar al paciente porque tiene citas programadas o pendientes de confirmación. Cancélelas primero.");
             }
         }
 

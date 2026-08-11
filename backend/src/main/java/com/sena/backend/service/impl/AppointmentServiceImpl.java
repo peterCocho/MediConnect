@@ -15,6 +15,7 @@ import com.sena.backend.repository.DoctorRepository;
 import com.sena.backend.repository.MedicalRecordRepository;
 import com.sena.backend.repository.PatientRepository;
 import com.sena.backend.service.AppointmentService;
+import com.sena.backend.domain.AppointmentStatus;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -74,19 +75,19 @@ public class AppointmentServiceImpl implements AppointmentService {
         MedicalRecord mr = medicalRecordRepository.findByPatientId(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expediente médico no encontrado para el paciente con id: " + patientId));
 
-        // 3. Save appointment
+        // 3. Save appointment using the new Enum and initial state
         Appointment ap = new Appointment();
         ap.setPatientId(patientId);
         ap.setDoctorId(doctorId);
         ap.setStartTime(start);
         ap.setEndTime(end);
-        ap.setStatus("BOOKED");
+        ap.setStatus(AppointmentStatus.PENDING_CONFIRMATION);
         Appointment savedAppointment = appointmentRepository.save(ap);
 
-        // 4. Create and link consultation to the unique medical record
+        // 4. Create and link consultation to the unique medical record using synchronized state
         Consultation c = new Consultation();
         c.setConsultationDate(start);
-        c.setStatus("SCHEDULED");
+        c.setStatus(AppointmentStatus.PENDING_CONFIRMATION);
         c.setDoctor(doctor);
         c.setMedicalRecord(mr);
         c.setAppointment(savedAppointment);
@@ -99,25 +100,53 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
+    public Appointment confirmAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con id: " + appointmentId));
+
+        // Strictly validate that only pending appointments can be confirmed
+        if (appointment.getStatus() != AppointmentStatus.PENDING_CONFIRMATION) {
+            throw new BusinessRuleException("La cita no puede ser confirmada porque su estado actual es: " + appointment.getStatus().name());
+        }
+
+        // Apply transition to SCHEDULED for the appointment
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        // Synchronize the transition with the clinical domain
+        consultationRepository.findByAppointmentId(appointmentId)
+                .ifPresent(consultation -> {
+                    consultation.setStatus(AppointmentStatus.SCHEDULED);
+                    consultationRepository.save(consultation);
+                });
+
+        return savedAppointment;
+    }
+
+
+    @Override
+    @Transactional
     public Appointment cancelAppointment(Long appointmentId, String reason) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con id: " + appointmentId));
 
-        if ("CANCELED".equals(appointment.getStatus())) {
+        // Validate state transitions using the Enum
+        if (appointment.getStatus() == AppointmentStatus.CANCELED) {
             throw new BusinessRuleException("La cita ya se encuentra cancelada.");
         }
-        if ("COMPLETED".equals(appointment.getStatus())) {
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
             throw new BusinessRuleException("No se puede cancelar una cita que ya fue completada.");
         }
 
-        appointment.setStatus("CANCELED");
+        // Apply cancellation state
+        appointment.setStatus(AppointmentStatus.CANCELED);
         appointment.setCancellationReason(reason);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
         // Propagate cancellation to the clinical domain
         consultationRepository.findByAppointmentId(appointmentId)
                 .ifPresent(consultation -> {
-                    consultation.setStatus("CANCELED");
+                    consultation.setStatus(AppointmentStatus.CANCELED);
                     consultationRepository.save(consultation);
                 });
 
