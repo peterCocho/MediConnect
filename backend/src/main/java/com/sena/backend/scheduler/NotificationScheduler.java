@@ -3,8 +3,11 @@ package com.sena.backend.scheduler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.entity.Appointment;
+import com.sena.backend.entity.Consultation;
 import com.sena.backend.entity.Notification;
+import com.sena.backend.entity.Patient;
 import com.sena.backend.repository.AppointmentRepository;
+import com.sena.backend.repository.ConsultationRepository;
 import com.sena.backend.repository.NotificationRepository;
 import com.sena.backend.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +34,7 @@ public class NotificationScheduler {
 
     @Value("${n8n.webhook.reminder-url}") // Se Necesita una URL diferente en n8n para recordatorios
     private String n8nReminderWebhookUrl;
+    private ConsultationRepository consultationRepository;
 
     public NotificationScheduler(AppointmentRepository appointmentRepository,
                                  NotificationRepository notificationRepository,
@@ -68,8 +72,51 @@ public class NotificationScheduler {
     }
 
     private void triggerNotification(Appointment appointment, String notificationType) {
-        // ... Lógica similar a NotificationEventListener para crear la entidad Notification,
-        // armar el payload (incluyendo el notificationType) y hacer el POST síncrono al webhook de n8n.
-        // Al final, guardar el estado (SENT o FAILED) de la notificación en la DB.
+        // 1. Fetch related Consultation
+        Consultation consultation = consultationRepository.findByAppointmentId(appointment.getId()).orElse(null);
+        if (consultation == null) {
+            return;
+        }
+
+        // 2. Idempotency check: prevent duplicate reminders for the same consultation
+        boolean alreadyTriggered = notificationRepository.existsByConsultationIdAndType(consultation.getId(), notificationType);
+        if (alreadyTriggered) {
+            return;
+        }
+
+        Patient patient = patientRepository.findById(appointment.getPatientId()).orElse(null);
+        if (patient == null) {
+            return;
+        }
+
+        // 3. Register the notification intent in the database with required fields
+        Notification notification = new Notification();
+        notification.setConsultation(consultation);
+        notification.setType(notificationType);
+        notification.setDestinationNumber(patient.getPhone());
+        notification.setStatus("PENDING");
+        notification.setUpdatedAt(OffsetDateTime.now());
+
+        notification = notificationRepository.save(notification);
+
+        // 4. Prepare the payload for n8n
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("appointmentId", appointment.getId());
+        payload.put("patientPhone", patient.getPhone());
+        payload.put("patientName", patient.getFullName());
+        payload.put("appointmentDate", appointment.getStartTime().toString());
+        payload.put("notificationType", notificationType);
+
+        // 5. Dispatch the HTTP request and update the final status
+        try {
+            restTemplate.postForEntity(n8nReminderWebhookUrl, payload, Void.class);
+            notification.setStatus("SENT");
+        } catch (Exception e) {
+            notification.setStatus("FAILED");
+            System.err.println("Fallo al enviar el recordatorio a n8n para la cita " + appointment.getId() + ": " + e.getMessage());
+        } finally {
+            notification.setUpdatedAt(OffsetDateTime.now());
+            notificationRepository.save(notification);
+        }
     }
 }

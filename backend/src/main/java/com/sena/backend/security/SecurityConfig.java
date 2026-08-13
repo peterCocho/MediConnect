@@ -27,10 +27,12 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final IntegrationApiKeyFilter integrationApiKeyFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService, IntegrationApiKeyFilter integrationApiKeyFilter) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
+        this.integrationApiKeyFilter = integrationApiKeyFilter;
     }
 
     @Bean
@@ -90,9 +92,13 @@ public class SecurityConfig {
                                 "/v3/api-docs",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        // Allow traffic to integrations (IntegrationApiKeyFilter will handle authorization)
+                        .requestMatchers("/api/integrations/**").permitAll()
                         .requestMatchers("/api/users/assign-role").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
+                // Register the API Key filter before standard authentication
+                .addFilterBefore(integrationApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

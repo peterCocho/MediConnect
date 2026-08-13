@@ -32,4 +32,8 @@ public class Notification {
     @JoinColumn(name = "consultation_id", nullable = false, foreignKey = @ForeignKey(name = "fk_notification_consultation"))
     private Consultation consultation;
 
+    // Añade esto debajo de providerId
+    @Column(name = "notification_type", nullable = false, length = 50)
+    private String type;
+
 }

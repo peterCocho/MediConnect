@@ -7,6 +7,7 @@ import com.sena.backend.entity.Doctor;
 import com.sena.backend.entity.Patient;
 import com.sena.backend.entity.MedicalRecord;
 import com.sena.backend.event.AppointmentCanceledEvent;
+import com.sena.backend.event.AppointmentRequiresConfirmationEvent;
 import com.sena.backend.exception.BusinessRuleException;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.AppointmentRepository;
@@ -95,6 +96,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Consultation savedConsultation = consultationRepository.save(c);
         eventPublisher.publishEvent(new ConsultationScheduledEvent(this, savedConsultation.getId()));
 
+        eventPublisher.publishEvent(new AppointmentRequiresConfirmationEvent(this, savedAppointment.getId()));
         return savedAppointment;
     }
 

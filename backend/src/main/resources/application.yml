@@ -41,7 +41,8 @@ admin:
 
 # Integración n8n (Movido a la raíz, fuera de jwt)
 n8n:
+  api:
+    key: ${N8N_API_KEY:dev-secret-key-123}
   webhook:
-    url: ${N8N_WEBHOOK_URL:http://localhost:5678/webhook/test-notif}
+    url: ${N8N_WEBHOOK_URL:https://masteracademy1492.app.n8n.cloud/webhook-test/confirmacion-cita}
     reminder-url: ${N8N_WEBHOOK_REMINDER_URL:http://localhost:5678/webhook/test-reminder}
-    api-key: ${N8N_API_KEY:clave_secreta_desarrollo_123}
