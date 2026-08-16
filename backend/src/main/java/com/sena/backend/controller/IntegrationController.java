@@ -1,5 +1,6 @@
 package com.sena.backend.controller;
 
+import com.sena.backend.domain.appointment.CancelAppointmentRequestDTO;
 import com.sena.backend.domain.integration.IncomingMessagePayload;
 import com.sena.backend.entity.WhatsappMessageLog;
 import com.sena.backend.repository.WhatsappMessageLogRepository;
@@ -33,6 +34,21 @@ public class IntegrationController {
     public ResponseEntity<Void> confirmAppointmentFromIntegration(@PathVariable Long id) {
         // Calls the exact same business logic as the frontend controller
         appointmentService.confirmAppointment(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // Endpoint explicitly for n8n to cancel an appointment via API Key,
+    // triggered by the "Cancelar cita" button in the WhatsApp reminder template.
+    // Reuses the same CancelAppointmentRequestDTO as the receptionist-facing endpoint,
+    // whose "reason" field is @NotBlank -> n8n must always send a non-empty reason.
+    @PatchMapping("/appointments/{id}/cancel")
+    public ResponseEntity<Void> cancelAppointmentFromIntegration(@PathVariable Long id,
+                                                                 @RequestBody(required = false) CancelAppointmentRequestDTO body) {
+        String reason = (body != null && body.reason() != null && !body.reason().isBlank())
+                ? body.reason()
+                : "Cancelado por el paciente vía WhatsApp";
+
+        appointmentService.cancelAppointment(id, reason);
         return ResponseEntity.ok().build();
     }
 }

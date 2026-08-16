@@ -41,7 +41,7 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = Patient.builder()
                 .identityDocument(req.getIdentityDocument())
                 .fullName(req.getFullName())
-                .phone(req.getPhone())
+                .phone(normalizePhone(req.getPhone()))
                 .birthDate(req.getBirthDate())
                 .isActive(true)
                 .build();
@@ -72,6 +72,15 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional(readOnly = true)
+    public PatientResponse getPatientByPhone(String phone) {
+        Patient patient = patientRepository.findByPhone(phone)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un paciente registrado con el teléfono: " + phone));
+
+        return mapToResponse(patient);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<PatientResponse> getAllPatients(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
 
@@ -86,7 +95,7 @@ public class PatientServiceImpl implements PatientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
 
         patient.setFullName(req.getFullName());
-        patient.setPhone(req.getPhone());
+        patient.setPhone(normalizePhone(req.getPhone()));
         patient.setBirthDate(req.getBirthDate());
 
         if (req.getIsActive() != null) {
@@ -137,5 +146,21 @@ public class PatientServiceImpl implements PatientService {
 
     private String generateRecordNumber() {
         return "MR-" + UUID.randomUUID();
+    }
+
+    // Normalizes phone numbers to match the digits-only format Meta/WhatsApp
+    // sends in incoming webhooks (e.g. "573107984713"), regardless of how the
+    // receptionist typed it in the form ("+57 310 798 4713", "310-798-4713", etc.).
+    // This keeps PatientRepository.findByPhone() a simple exact-match lookup.
+    private String normalizePhone(String rawPhone) {
+        if (rawPhone == null) {
+            return null;
+        }
+        String digitsOnly = rawPhone.replaceAll("[^0-9]", "");
+        // Bare 10-digit Colombian mobile number (starts with 3) -> prefix country code
+        if (digitsOnly.length() == 10 && digitsOnly.startsWith("3")) {
+            return "57" + digitsOnly;
+        }
+        return digitsOnly;
     }
 }
