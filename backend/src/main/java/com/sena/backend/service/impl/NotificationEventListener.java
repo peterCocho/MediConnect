@@ -72,6 +72,7 @@ public class NotificationEventListener {
     }
 
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAppointmentCanceled(AppointmentCanceledEvent event) {
         Long appointmentId = event.getAppointmentId();
@@ -94,39 +95,16 @@ public class NotificationEventListener {
 
         Notification notif = new Notification();
         notif.setDestinationNumber(phone);
-        notif.setStatus("PENDING");
+        // Status changed to LOGGED to reflect internal audit without external dispatch
+        notif.setStatus("LOGGED");
+        notif.setType(notificationType);
         notif.setUpdatedAt(OffsetDateTime.now());
         notif.setConsultation(consultation);
 
-        Notification saved = notificationRepository.save(notif);
+        // Save the notification in the database for local audit trail
+        notificationRepository.save(notif);
 
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("notification_id", saved.getId());
-        payload.put("notification_type", notificationType); // ¡Importante para n8n! CONFIRMATION, CANCELLATION
-        payload.put("patient_name", patient.getFullName());
-        payload.put("destination_number", saved.getDestinationNumber());
-        payload.put("doctor_name", consultation.getDoctor() != null ? consultation.getDoctor().getFullName() : null);
-        payload.put("consultation_date", consultation.getConsultationDate() != null ? consultation.getConsultationDate().toString() : null);
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            String json = objectMapper.writeValueAsString(payload);
-            HttpEntity<String> entity = new HttpEntity<>(json, headers);
-
-            ResponseEntity<String> response = restTemplate.postForEntity(n8nWebhookUrl, entity, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                saved.setStatus("SENT");
-            } else {
-                saved.setStatus("FAILED");
-            }
-            notificationRepository.save(saved);
-
-        } catch (Exception ex) {
-            saved.setStatus("FAILED");
-            notificationRepository.save(saved);
-            ex.printStackTrace();
-        }
+        // External HTTP request logic removed to prevent payload collisions
+        // with the Outbound Confirmation n8n webhook.
     }
 }
