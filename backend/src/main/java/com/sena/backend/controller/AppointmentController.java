@@ -29,7 +29,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/book")
-    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
     public ResponseEntity<AppointmentResponseDTO> bookAppointment(@Valid @RequestBody BookAppointmentRequestDTO request) throws Exception {
         Appointment appointment = appointmentService.bookAppointment(
                 request.getPatientId(),
@@ -41,7 +41,7 @@ public class AppointmentController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
     public ResponseEntity<AppointmentResponseDTO> cancelAppointment(
             @PathVariable Long id,
             @Valid @RequestBody CancelAppointmentRequestDTO request
@@ -51,7 +51,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
     public ResponseEntity<AppointmentResponseDTO> getAppointment(@PathVariable Long id) {
         Appointment appointment = appointmentService.getAppointmentById(id);
         return ResponseEntity.ok(convertToResponseDTO(appointment));
@@ -71,7 +71,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
     public ResponseEntity<Page<AppointmentResponseDTO>> getPatientAppointments(
             @PathVariable Long patientId,
             @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable

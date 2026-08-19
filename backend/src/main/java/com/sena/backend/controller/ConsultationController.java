@@ -24,7 +24,8 @@ public class ConsultationController {
     public ConsultationController(ConsultationService consultationService) {
         this.consultationService = consultationService;
     }
-
+    
+    @PreAuthorize("hasRole('DOCTOR')")
     @PutMapping("/{id}/execute")
     public ResponseEntity<ConsultationResponseDTO> executeConsultation(
             @PathVariable Long id,
