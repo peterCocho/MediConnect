@@ -52,49 +52,59 @@ export function ReceptionistDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+useEffect(() => {
     const loadReceptionistDashboard = async () => {
       try {
         setIsLoading(true);
         setError('');
 
-        const [appointmentsResponse, allAppointmentsResponse, notificationsResponse] = await Promise.all([
+        // Calculate today's boundaries for backend filtering
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).toISOString();
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+
+const [recentAppointmentsRes, todayAppointmentsRes, notificationsRes] = await Promise.all([
+          // Fetch only 5 recent appointments for the table
           api.get('/api/appointments', {
             params: {
               page: 0,
               size: 5,
               sort: 'startTime,desc',
-              startDate: '2000-01-01T00:00:00Z',
-              endDate: '2100-01-01T00:00:00Z',
+              startDate: '2020-01-01T00:00:00Z',
+              endDate: '2100-01-01T00:00:00Z', 
             },
           }),
+          // Fetch strictly today's appointments for metrics
           api.get('/api/appointments', {
             params: {
               page: 0,
-              size: 1000,
-              sort: 'startTime,desc',
-              startDate: '2000-01-01T00:00:00Z',
-              endDate: '2100-01-01T00:00:00Z',
+              size: 100, 
+              sort: 'startTime,asc',
+              startDate: startOfDay,
+              endDate: endOfDay,
             },
           }),
           api.get('/api/whatsapp/messages/unread'),
         ]);
 
-        const allAppointments = (allAppointmentsResponse.data?.content ?? []) as AppointmentRow[];
-        const today = getRelativeDateKey(0);
-        setAppointments((appointmentsResponse.data?.content ?? []) as AppointmentRow[]);
-        const todayAppointments = allAppointments.filter((appointment) => getDateKey(appointment.startTime) === today);
-        const confirmedToday = todayAppointments.filter((appointment) => appointment.status === 'CONFIRMED' || appointment.status === 'SCHEDULED').length;
-        const pendingToday = todayAppointments.filter((appointment) => appointment.status === 'PENDING_CONFIRMATION').length;
+        setAppointments((recentAppointmentsRes.data?.content ?? []) as AppointmentRow[]);
+        const todayAppointments = (todayAppointmentsRes.data?.content ?? []) as AppointmentRow[];
+        
+        // Isolate states to prevent redundant counts
+        const confirmed = todayAppointments.filter(a => a.status === 'CONFIRMED' || a.status === 'SCHEDULED').length;
+        const pending = todayAppointments.filter(a => a.status === 'PENDING_CONFIRMATION').length;
+        const canceled = todayAppointments.filter(a => a.status === 'CANCELED').length;
+        const totalValid = confirmed + pending;
+
         setMetrics({
-          arrivalsToday: allAppointments.filter((appointment) => getDateKey(appointment.startTime) === today && appointment.status !== 'CANCELED').length,
-          patientsScheduledToday: todayAppointments.filter((appointment) => appointment.status !== 'CANCELED').length,
-          confirmationRateToday: confirmedToday + pendingToday > 0 ? Math.round((confirmedToday / (confirmedToday + pendingToday)) * 100) : 0,
-          unreadWhatsapp: notificationsResponse.data?.length ?? 0,
-          releasedSlotsToday: todayAppointments.filter((appointment) => appointment.status === 'CANCELED').length,
+          arrivalsToday: confirmed, 
+          patientsScheduledToday: totalValid,
+          confirmationRateToday: totalValid > 0 ? Math.round((confirmed / totalValid) * 100) : 0,
+          unreadWhatsapp: notificationsRes.data?.length ?? 0,
+          releasedSlotsToday: canceled,
         });
       } catch (err) {
-        setError('No se pudo cargar el panel del recepcionista.');
+        setError('No se pudo cargar el panel de recepción.');
       } finally {
         setIsLoading(false);
       }
@@ -153,7 +163,7 @@ export function ReceptionistDashboard() {
               <p className="text-sm text-[#64748B]">Tasa de confirmación diaria</p>
             </div>
 
-            {/* <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <MessageCircle className="h-6 w-6 text-[#2C7A7B]" />
@@ -162,7 +172,7 @@ export function ReceptionistDashboard() {
               </div>
               <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.unreadWhatsapp}</h3>
               <p className="text-sm text-[#64748B]">Mensajes sin leer</p>
-            </div> */}
+            </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">

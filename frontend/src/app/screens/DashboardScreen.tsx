@@ -86,15 +86,30 @@ export function DashboardScreen() {
     loadDashboard();
   }, []);
 
-  const today = getRelativeDateKey(0);
+// Calculate date boundaries once
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // Filter appointments for the current month
+  const monthlyAppointments = allAppointments.filter((appointment) => {
+    const appointmentDate = new Date(appointment.startTime);
+    return appointmentDate.getMonth() === currentMonth && appointmentDate.getFullYear() === currentYear;
+  });
+
+  // Calculate rate using the array length directly
+  const totalMonthly = monthlyAppointments.length;
+  const cancelledAppointments = monthlyAppointments.filter((appointment) => appointment.status === 'CANCELED').length;
+  const cancellationRate = totalMonthly > 0 ? Math.round((cancelledAppointments / totalMonthly) * 100) : 0;
+
+  // 2. Calculate Completed Consultations (Last 7 Days)
   const weekStart = new Date();
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - 6);
-  const weekCompletedCount = allAppointments.filter((appointment) => appointment.status === 'COMPLETED' && new Date(appointment.startTime) >= weekStart).length;
-  const monthlyAppointments = allAppointments.filter((appointment) => new Date(appointment.startTime).getMonth() === new Date().getMonth() && new Date(appointment.startTime).getFullYear() === new Date().getFullYear());
-  const cancelledAppointments = monthlyAppointments.filter((appointment) => appointment.status === 'CANCELED').length;
-  const cancellationBase = monthlyAppointments.filter((appointment) => appointment.status !== 'CANCELED').length + cancelledAppointments;
-  const cancellationRate = cancellationBase > 0 ? Math.round((cancelledAppointments / cancellationBase) * 100) : 0;
+  
+  const weekCompletedCount = allAppointments.filter((appointment) => 
+    appointment.status === 'COMPLETED' && new Date(appointment.startTime) >= weekStart
+  ).length;
 
   return (
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
