@@ -1,6 +1,7 @@
 import { Calendar, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../service/api';
+import { translateStatus } from '../utils/statusLabels';
 
 type ConsultationRow = {
   id: number;
@@ -26,7 +27,7 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
         setIsLoading(true);
         setError('');
         const response = await api.get('/api/consultations', {
-          params: { page: 0, size: 20, sort: 'consultationDate,desc' },
+          params: { page: 0, size: 1000, sort: 'consultationDate,asc' },
         });
         setConsultas(response.data?.content ?? []);
       } catch (err) {
@@ -41,9 +42,26 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
 
   const today = getDateKey(new Date());
   const agenda = useMemo(() => (consultas ?? []).filter((consulta) => consulta.consultationDate && getDateKey(consulta.consultationDate) === today), [consultas, today]);
-  const totalDay = agenda.filter((consulta) => consulta.status !== 'CANCELED').length;
-  const waitingRoom = agenda.filter((consulta) => consulta.status === 'CONFIRMED').length;
-  const attendedToday = agenda.filter((consulta) => consulta.status === 'COMPLETED').length;
+  
+  // Count only scheduled, confirmed, and completed consultations for the day
+  const totalDay = agenda.filter((consulta) => 
+    ['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'FINALIZED'].includes(consulta.status)
+  ).length;
+  
+  const waitingRoom = agenda.filter((consulta) => consulta.status === 'SCHEDULED' || consulta.status === 'CONFIRMED').length;
+  const attendedToday = agenda.filter((consulta) => consulta.status === 'COMPLETED' || consulta.status === 'FINALIZED').length;
+
+  const scheduledConsultations = useMemo(() => agenda.filter((consulta) => consulta.status === 'SCHEDULED'), [agenda]);
+
+  const statusColors: Record<string, { text: string; bg: string }> = {
+    COMPLETED: { text: 'text-[#10B981]', bg: 'bg-[#10B981]' },
+    FINALIZED: { text: 'text-[#10B981]', bg: 'bg-[#10B981]' },
+    SCHEDULED: { text: 'text-[#3B82F6]', bg: 'bg-[#3B82F6]' },
+    CONFIRMED: { text: 'text-[#3B82F6]', bg: 'bg-[#3B82F6]' },
+    PENDING_CONFIRMATION: { text: 'text-[#F59E0B]', bg: 'bg-[#F59E0B]' },
+    CANCELED: { text: 'text-[#EF4444]', bg: 'bg-[#EF4444]' },
+  };
+  const defaultColor = { text: 'text-[#64748B]', bg: 'bg-[#64748B]' };
 
   const formatHour = (value: string) => {
     const date = new Date(value);
@@ -110,43 +128,70 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
 
         {error ? (
           <div className="px-6 py-8 text-center text-red-600">{error}</div>
-        ) : agenda.length === 0 ? (
+        ) : scheduledConsultations.length === 0 ? (
           <div className="px-6 py-10 text-center text-[#64748B]">No hay consultas programadas para este médico.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="hidden md:table-header-group">
-                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Fecha</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Hora</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Expediente</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Fecha</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Estado</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {agenda.map((consulta) => (
-                  <tr key={consulta.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
-                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-semibold text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">{formatHour(consulta.consultationDate)}</td>
-                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">#{consulta.medicalRecordId ?? '—'}</td>
-                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</td>
-                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
-                      <span className="inline-flex items-center gap-2 text-sm text-[#10B981]">
-                        <span className="h-2 w-2 rounded-full bg-[#10B981]" />
-                        {consulta.status}
-                      </span>
-                    </td>
-                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Acción">
-                      <button
-                        type="button"
-                        onClick={() => onIniciarConsulta?.(consulta.id)}
-                        className="rounded-lg bg-[#2C7A7B] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#235E5F]"
-                      >
-                        Iniciar Consulta
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {scheduledConsultations.map((consulta) => {
+                  const currentStatus = consulta.status ?? '';
+                  const currentStyle = statusColors[currentStatus] || defaultColor;
+
+                  return (
+										<tr
+											key={consulta.id}
+											className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+											<td
+												className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+												data-label="Fecha">
+												{new Date(consulta.consultationDate).toLocaleDateString(
+													"es-ES",
+												)}
+											</td>
+											<td
+												className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-semibold text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+												data-label="Hora">
+												{formatHour(consulta.consultationDate)}
+											</td>
+											<td
+												className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+												data-label="Expediente">
+												#{consulta.medicalRecordId ?? "—"}
+											</td>
+											<td
+												className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+												data-label="Estado">
+												<span
+													className={`inline-flex items-center gap-2 text-sm ${currentStyle.text}`}>
+													<span
+														className={`h-2 w-2 rounded-full ${currentStyle.bg}`}
+													/>
+                              {translateStatus(currentStatus)}
+												</span>
+											</td>
+											<td
+												className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+												data-label="Acción">
+												<button
+													type="button"
+													onClick={() => onIniciarConsulta?.(consulta.id)}
+													className="rounded-lg bg-[#2C7A7B] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#235E5F]">
+													Iniciar Consulta
+												</button>
+											</td>
+										</tr>
+									);
+                })}
               </tbody>
             </table>
           </div>

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../service/api';
+import { translateStatus } from '../utils/statusLabels';
 
 type AppointmentRow = {
   id: number;
@@ -221,7 +222,7 @@ const [recentAppointmentsRes, todayAppointmentsRes, notificationsRes] = await Pr
                         <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
                           <span className={`inline-flex items-center gap-2 text-sm ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
                             <span className={`h-2 w-2 rounded-full ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} />
-                            {cita.status}
+                            {translateStatus(cita.status)}
                           </span>
                         </td>
                       </tr>

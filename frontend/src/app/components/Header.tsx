@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import api from '../../service/api';
 import { User } from '../types/user';
+import { translateStatus } from '../utils/statusLabels';
 
 interface HeaderProps {
   user: User;
@@ -64,6 +65,7 @@ export function Header({ user, onLogout }: HeaderProps) {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertItems, setAlertItems] = useState<AlertItem[]>([]);
   const [isLoadingAlerts, setIsLoadingAlerts] = useState(false);
+  const [alertRefreshKey, setAlertRefreshKey] = useState(0);
 
   const shouldShowBell = user.role === 'DOCTOR' || user.role === 'RECEPTIONIST';
 
@@ -88,7 +90,8 @@ export function Header({ user, onLogout }: HeaderProps) {
           }));
           setAlertItems(items);
           return;
-        }
+        };
+
 
         const isToday = (date: string) => {
       const consultationDate = new Date(date);
@@ -100,20 +103,23 @@ export function Header({ user, onLogout }: HeaderProps) {
       );
     };
 
-    const response = await api.get('/api/consultations', {
-      params: { page: 0, size: 5, sort: 'consultationDate,asc' },
-    });
+        const response = await api.get('/api/consultations', {
+          params: { page: 0, size: 20, sort: 'consultationDate,desc' },
+        });
 
-    const items = (response.data?.content ?? [])
-      .filter((consultation: any) => consultation.status === 'SCHEDULED' && isToday(consultation.consultationDate))
-      .slice(0, 5)
-      .map((consultation: any) => ({
-        id: consultation.id,
-        title: `Consulta programada`,
-        subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`,
-        path: '/mi-agenda',
-        actionLabel: 'Ir a mi agenda',
-      }));
+        const items = (response.data?.content ?? [])
+          .filter((consultation: any) =>
+            consultation.status === 'SCHEDULED' &&
+            isToday(consultation.consultationDate),
+          )
+          .slice(0, 5)
+          .map((consultation: any) => ({
+            id: consultation.id,
+            title: consultation.fullName ? `Paciente: ${consultation.fullName}` : 'Consulta de hoy',
+            subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })} · ${translateStatus(consultation.status)}`,
+            path: '/mi-agenda',
+            actionLabel: 'Ir a mi agenda',
+          }));
 
         setAlertItems(items);
       } catch (error) {
@@ -124,7 +130,7 @@ export function Header({ user, onLogout }: HeaderProps) {
     };
 
     loadAlerts();
-  }, [shouldShowBell, user.role]);
+  }, [shouldShowBell, user.role, alertRefreshKey]);
 
   const notificationCount = alertItems.length;
 
@@ -164,6 +170,7 @@ export function Header({ user, onLogout }: HeaderProps) {
     if (!shouldShowBell) {
       return;
     }
+    setAlertRefreshKey((current) => current + 1);
     setIsAlertOpen((current) => !current);
   };
 

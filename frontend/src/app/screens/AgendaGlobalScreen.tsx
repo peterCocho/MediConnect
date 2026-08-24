@@ -2,6 +2,7 @@ import { Calendar, Clock, User, Loader2, ChevronLeft, ChevronRight, XCircle, X, 
 import { useEffect, useState } from 'react';
 import api from '../../service/api';
 import { useAuth } from '../context/AuthContext';
+import { translateStatus } from '../utils/statusLabels';
 
 type AppointmentRow = {
   id: number;
@@ -203,7 +204,7 @@ export function AgendaGlobalScreen() {
                             <div className="flex items-center gap-3">
                               <span className={`inline-flex items-center gap-2 text-sm ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
                                 <span className={`h-2 w-2 rounded-full ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} />
-                                {cita.status}
+                                {translateStatus(cita.status)}
                               </span>
                               {canCancel && (
                                 <button
@@ -275,7 +276,7 @@ export function AgendaGlobalScreen() {
             <div className="space-y-4 px-6 py-5">
               <div className="rounded-xl bg-[#F8FAFC] p-4 text-sm text-[#475569]">
                 <div className="flex justify-between gap-4"><span>Cita</span><strong>#{appointmentToCancel.id}</strong></div>
-                <div className="mt-2 flex justify-between gap-4"><span>Estado actual</span><strong>{appointmentToCancel.status}</strong></div>
+                <div className="mt-2 flex justify-between gap-4"><span>Estado actual</span><strong>{translateStatus(appointmentToCancel.status)}</strong></div>
               </div>
               <label htmlFor="cancellation-reason" className="block text-sm font-medium text-[#475569]">
                 Motivo de cancelación

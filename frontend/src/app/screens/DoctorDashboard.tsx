@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../service/api';
+import { translateStatus } from '../utils/statusLabels';
 
 type DoctorConsultation = {
   id: number;
@@ -16,6 +17,7 @@ type DoctorConsultation = {
   icd10Code?: string | null;
   reasonForVisit?: string | null;
 };
+
 
 const getDateKey = (value: string | Date) => {
   const date = value instanceof Date ? value : new Date(value);
@@ -62,6 +64,16 @@ export function DoctorDashboard() {
       .map((consultation) => consultation.medicalRecordId)
       .filter((medicalRecordId): medicalRecordId is number => medicalRecordId !== null && medicalRecordId !== undefined),
   ).size;
+
+const statusColors: Record<string, { text: string; bg: string }> = {
+    COMPLETED: { text: 'text-[#10B981]', bg: 'bg-[#10B981]' },
+    FINALIZED: { text: 'text-[#10B981]', bg: 'bg-[#10B981]' },
+    SCHEDULED: { text: 'text-[#3B82F6]', bg: 'bg-[#3B82F6]' },
+    CONFIRMED: { text: 'text-[#3B82F6]', bg: 'bg-[#3B82F6]' },
+    PENDING_CONFIRMATION: { text: 'text-[#F59E0B]', bg: 'bg-[#F59E0B]' },
+    CANCELED: { text: 'text-[#EF4444]', bg: 'bg-[#EF4444]' },
+  };
+  const defaultColor = { text: 'text-[#64748B]', bg: 'bg-[#64748B]' };
 
   return (
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
@@ -126,6 +138,7 @@ export function DoctorDashboard() {
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Fecha</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Hora</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Expediente</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Diagnóstico</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Estado</th>
@@ -134,30 +147,40 @@ export function DoctorDashboard() {
                 <tbody>
                   {consultations.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-10 text-center text-[#64748B]">No hay consultas registradas para este médico.</td>
+                      <td colSpan={5} className="px-6 py-10 text-center text-[#64748B]">No hay consultas registradas para este médico.</td>
                     </tr>
                   ) : (
-                    consultations.map((consultation) => (
-                      <tr key={consultation.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
-                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">
-                          {consultation.consultationDate
-                            ? new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })
-                            : 'Sin fecha'}
-                        </td>
-                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">
-                          #{consultation.medicalRecordId ?? '—'}
-                        </td>
-                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Diagnóstico">
-                          {consultation.icd10Code ?? 'Sin diagnóstico'}
-                        </td>
-                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
-                          <span className={`inline-flex items-center gap-2 text-sm ${consultation.status === 'COMPLETED' || consultation.status === 'FINALIZED' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
-                            <span className={`h-2 w-2 rounded-full ${consultation.status === 'COMPLETED' || consultation.status === 'FINALIZED' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} />
-                            {consultation.status ?? 'Pendiente'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                    consultations.map((consultation) => {
+                      const currentStatus = consultation.status ?? '';
+                      const currentStyle = statusColors[currentStatus] || defaultColor;
+
+                      return (
+                        <tr key={consultation.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">
+                            {consultation.consultationDate
+                              ? new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short' })
+                              : 'Sin fecha'}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">
+                            {consultation.consultationDate
+                              ? new Date(consultation.consultationDate).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
+                              : 'Sin hora'}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">
+                            #{consultation.medicalRecordId ?? '—'}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Diagnóstico">
+                            {consultation.icd10Code ?? 'Sin diagnóstico'}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
+                            <span className={`inline-flex items-center gap-2 text-sm ${currentStyle.text}`}>
+                              <span className={`h-2 w-2 rounded-full ${currentStyle.bg}`} />
+                              {translateStatus(consultation.status)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

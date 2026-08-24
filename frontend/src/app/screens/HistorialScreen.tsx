@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import api from '../../service/api';
+import { translateStatus } from '../utils/statusLabels';
 
 type Consultation = {
   id: number;
@@ -83,7 +84,7 @@ export function HistorialScreen() {
                         <div className="mb-3 flex items-start justify-between gap-3">
                           <div>
                             <h4 className="font-semibold text-[#1E293B]">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</h4>
-                            <p className="text-sm text-[#64748B]">{consulta.status}</p>
+                            <p className="text-sm text-[#64748B]">{translateStatus(consulta.status)}</p>
                           </div>
                         </div>
 
