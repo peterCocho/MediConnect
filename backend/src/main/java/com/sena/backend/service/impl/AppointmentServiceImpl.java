@@ -106,6 +106,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con id: " + appointmentId));
 
+        // Idempotency check: if it is already scheduled, return it successfully without throwing an error
+        if (appointment.getStatus() == AppointmentStatus.SCHEDULED) {
+            return appointment;
+        }
+
         // Strictly validate that only pending appointments can be confirmed
         if (appointment.getStatus() != AppointmentStatus.PENDING_CONFIRMATION) {
             throw new BusinessRuleException("La cita no puede ser confirmada porque su estado actual es: " + appointment.getStatus().name());

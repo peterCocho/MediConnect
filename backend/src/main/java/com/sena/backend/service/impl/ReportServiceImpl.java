@@ -1,5 +1,6 @@
 package com.sena.backend.service.impl;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.domain.report.DashboardReportResponseDTO;
 import com.sena.backend.domain.report.DiagnosisCountProjection;
 import com.sena.backend.repository.ConsultationRepository;
@@ -32,11 +33,11 @@ public class ReportServiceImpl implements ReportService {
 
         // Execute count metric
         long totalConsultations = consultationRepository.countByStatusAndConsultationDateBetween(
-                "COMPLETED", startOfMonth, endOfMonth);
+                AppointmentStatus.COMPLETED, startOfMonth, endOfMonth);
 
         // Execute grouping metric (limit to top 5)
         List<DiagnosisCountProjection> projections = consultationRepository.findTopDiagnosesByDateRange(
-                "COMPLETED", startOfMonth, endOfMonth, PageRequest.of(0, 5));
+                AppointmentStatus.COMPLETED, startOfMonth, endOfMonth, PageRequest.of(0, 5));
 
         // Map projections to DTO
         List<DashboardReportResponseDTO.DiagnosisDetail> topDiagnoses = projections.stream()

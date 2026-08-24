@@ -41,8 +41,8 @@ public class ConsultationServiceImpl implements ConsultationService {
             throw new AccessDeniedException("No tiene permisos para ejecutar una consulta que no le ha sido asignada");
         }
 
-        // Business Rule: Standardized domain exception for status validation
-        if (!"SCHEDULED".equals(consultation.getStatus())) {
+        // Validate that the consultation is in a scheduled state before execution
+        if (consultation.getStatus() != AppointmentStatus.SCHEDULED) {
             throw new BusinessRuleException("Solo las consultas en estado SCHEDULED pueden ser ejecutadas");
         }
 
@@ -70,7 +70,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     @Transactional(readOnly = true)
     public List<ConsultationResponseDTO> getPatientTimeline(Long medicalRecordId) {
-        return consultationRepository.findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(medicalRecordId, "COMPLETED")
+        return consultationRepository.findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(medicalRecordId, AppointmentStatus.COMPLETED)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());

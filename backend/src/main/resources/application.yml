@@ -32,7 +32,7 @@ springdoc:
 # Security
 jwt:
   secret: ${JWT_SECRET:change_this_to_a_strong_secret}
-  expiration_minutes: ${JWT_EXP_MINUTES:60}
+  expiration_minutes: ${JWT_EXP_MINUTES:180}
 
 # Bootstrap del administrador inicial (DataInitializer)
 admin:
@@ -40,9 +40,18 @@ admin:
     password: ${ADMIN_SETUP_PASSWORD:admin123}
 
 # Integración n8n (Movido a la raíz, fuera de jwt)
+# n8n cloud
+#n8n:
+#  api:
+#    key: ${N8N_API_KEY:dev-secret-key-123}
+#  webhook:
+#    url: ${N8N_WEBHOOK_URL:https://mediconnect.app.n8n.cloud/webhook/confirmacion-cita}
+#    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://mediconnect.app.n8n.cloud/webhook/recordatorio-cita}
+
+# n8n local
 n8n:
   api:
     key: ${N8N_API_KEY:dev-secret-key-123}
   webhook:
-    url: ${N8N_WEBHOOK_URL:https://mediconnect.app.n8n.cloud/webhook/confirmacion-cita}
-    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://mediconnect.app.n8n.cloud/webhook/recordatorio-cita}
+    url: ${N8N_WEBHOOK_URL:http://localhost:5678/webhook/confirmacion-cita}
+    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:http://localhost:5678/webhook/recordatorio-cita}
