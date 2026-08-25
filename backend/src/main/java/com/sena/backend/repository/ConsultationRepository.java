@@ -21,11 +21,6 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
      * Pessimistic lock to check overlapping consultations for a doctor within a date/time range.
      * Use this method inside a @Transactional service when attempting to schedule to prevent race conditions.
      */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT c FROM Consultation c WHERE c.doctor.id = :doctorId AND c.consultationDate >= :from AND c.consultationDate <= :to")
-    List<Consultation> findOverlappingForDoctorForUpdate(@Param("doctorId") Long doctorId,
-                                                         @Param("from") OffsetDateTime from,
-                                                         @Param("to") OffsetDateTime to);
 
     Page<Consultation> findByDoctorId(Long doctorId, Pageable pageable);
 

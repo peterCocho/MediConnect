@@ -17,15 +17,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Busca las citas de un médico específico dentro de un rango de tiempo.
      * Útil para validaciones de disponibilidad en la capa de servicio.
      */
-    List<Appointment> findByDoctorIdAndStartTimeBetween(Long doctorId, OffsetDateTime from, OffsetDateTime to);
-
     // Fetch paginated appointments within a specific start time range
     Page<Appointment> findByStartTimeBetween(OffsetDateTime start, OffsetDateTime end, Pageable pageable);
 
     boolean existsByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
-
-    // Fetch all appointments for a specific doctor
-    List<Appointment> findByDoctorIdOrderByStartTimeDesc(Long doctorId);
 
     // Fetch paginated appointments for a specific patient
     Page<Appointment> findByPatientId(Long patientId, Pageable pageable);
