@@ -60,10 +60,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createDoctor(CreateDoctorRequest req) {
-        // 1. Crear el usuario con ROLE_DOCTOR
         User user = internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_DOCTOR");
 
-        // 2. Crear el perfil del doctor vinculado al usuario
+
         Doctor doctor = Doctor.builder()
                 .documentNumber(req.getDocumentNumber())
                 .fullName(req.getFullName())
@@ -79,17 +78,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createReceptionist(CreateReceptionistRequest req) {
-        // Para recepcionistas, solo creamos el usuario con ROLE_RECEPTION
         internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_RECEPTION");
     }
     
 
-    /**
-     * Helper para la creación base de un usuario persistido.
-     */
+
     private User internalCreateUser(String username, String password, String roleName) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new BusinessRuleException("El nombre de usuario ya existe: " + username);
+            throw new BusinessRuleException("Username already exists: " + username);
         }
 
         Role role = roleRepository.findByName(roleName)
@@ -123,7 +119,7 @@ public class UserServiceImpl implements UserService {
         doctor.setEmail(req.getEmail());
         doctor.setPhone(req.getPhone());
         doctor.setSpecialty(req.getSpecialty());
-        // Si el estado cambia a inactivo, también desactivamos la cuenta de usuario para bloquear el inicio de sesión
+        // If status changes to inactive, also disable user account to block login
         doctor.getUser().setActive(req.getIsActive());
 
         doctorRepository.save(doctor);
@@ -158,7 +154,7 @@ public class UserServiceImpl implements UserService {
     public Page<DoctorResponse> getAllDoctors(int page, int size, String sortBy, String fullName, String specialty, Boolean isActive) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
 
-        // Se construye la consulta dinámica basándose en los parámetros recibidos
+        // Build dynamic query based on received parameters
         Specification<Doctor> spec = DoctorSpecification.withDynamicFilters(fullName, specialty, isActive);
 
         return doctorRepository.findAll(spec, pageable)

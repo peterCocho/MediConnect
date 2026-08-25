@@ -113,14 +113,12 @@ public class PatientServiceImpl implements PatientService {
 
         // Validation for deactivation scenario
         if (!status) {
-            // ACTUALIZADO: Verifica tanto SCHEDULED como PENDING_CONFIRMATION
             boolean hasPendingAppointments = appointmentRepository.existsByPatientIdAndStatusIn(
                     id,
                     List.of(AppointmentStatus.PENDING_CONFIRMATION, AppointmentStatus.SCHEDULED)
             );
 
             if (hasPendingAppointments) {
-                // ACTUALIZADO: El mensaje refleja la nueva regla de negocio
                 throw new BusinessRuleException("No se puede desactivar al paciente porque tiene citas programadas o pendientes de confirmación. Cancélelas primero.");
             }
         }

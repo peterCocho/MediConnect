@@ -22,11 +22,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void updateNotificationStatus(NotificationCallbackRequestDTO dto) throws Exception {
-        // CORRECCIÓN: Usar getNotificationId() generado por Lombok, no getNotification_id()
         Notification n = notificationRepository.findById(dto.getNotificationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + dto.getNotificationId()));
 
-        // CORRECCIÓN: Usar getters estándar
         n.setStatus(dto.getStatus());
         n.setProviderId(dto.getProviderId()); // getProviderId()
         n.setUpdatedAt(OffsetDateTime.now());

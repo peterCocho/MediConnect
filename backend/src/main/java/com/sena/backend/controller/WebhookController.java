@@ -7,8 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-// Cambiamos la ruta para que caiga bajo el filtro de seguridad de integraciones
-@RequestMapping("/api/integrations/notifications")
+    @RequestMapping("/api/integrations/notifications")
 public class WebhookController {
 
     private final NotificationService notificationService;
@@ -19,8 +18,6 @@ public class WebhookController {
 
     @PostMapping("/status")
     public ResponseEntity<Void> receiveStatus(@Valid @RequestBody NotificationCallbackRequestDTO dto) throws Exception {
-        // La validación de X-API-Key ya fue manejada por IntegrationApiKeyFilter.
-        // Si la petición llega aquí, está autorizada.
         notificationService.updateNotificationStatus(dto);
         return ResponseEntity.ok().build();
     }

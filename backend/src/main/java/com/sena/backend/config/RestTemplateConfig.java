@@ -11,7 +11,7 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        // Definir timeouts de 5 segundos para evitar que el hilo asíncrono se bloquee
+        // Set 5-second timeouts to prevent async thread from blocking
         factory.setConnectTimeout(5000);
         factory.setReadTimeout(5000);
         return new RestTemplate(factory);

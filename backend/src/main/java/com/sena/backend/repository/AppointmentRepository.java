@@ -22,7 +22,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Fetch paginated appointments within a specific start time range
     Page<Appointment> findByStartTimeBetween(OffsetDateTime start, OffsetDateTime end, Pageable pageable);
 
-    // NUEVO: Reemplaza a existsByPatientIdAndStatus para soportar múltiples estados a la vez
     boolean existsByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
 
     // Fetch all appointments for a specific doctor
@@ -34,7 +33,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Fetch paginated appointments for a specific doctor
     Page<Appointment> findByDoctorId(Long doctorId, Pageable pageable);
 
-    // ACTUALIZADO: Compara contra la constante del Enum directamente en HQL
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Appointment a " +
             "WHERE a.doctorId = :doctorId " +
             "AND a.startTime < :endTime " +
@@ -44,6 +42,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                        @Param("startTime") OffsetDateTime startTime,
                                        @Param("endTime") OffsetDateTime endTime);
 
-    // ACTUALIZADO: El parámetro de estado ahora es un AppointmentStatus
     List<Appointment> findByStatusAndStartTimeBetween(AppointmentStatus status, OffsetDateTime start, OffsetDateTime end);
 }

@@ -2,12 +2,12 @@ package com.sena.backend.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sena.backend.ConsultationScheduledEvent;
-import com.sena.backend.event.AppointmentCanceledEvent; // Nuevo import
+import com.sena.backend.event.AppointmentCanceledEvent;
 import com.sena.backend.entity.*;
-import com.sena.backend.repository.AppointmentRepository; // Nuevo import
+import com.sena.backend.repository.AppointmentRepository;
 import com.sena.backend.repository.ConsultationRepository;
 import com.sena.backend.repository.NotificationRepository;
-import com.sena.backend.repository.PatientRepository; // Nuevo import
+import com.sena.backend.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,8 +30,8 @@ public class NotificationEventListener {
 
     private final ConsultationRepository consultationRepository;
     private final NotificationRepository notificationRepository;
-    private final AppointmentRepository appointmentRepository; // Nueva dependencia
-    private final PatientRepository patientRepository; // Nueva dependencia
+    private final AppointmentRepository appointmentRepository;
+    private final PatientRepository patientRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -40,8 +40,8 @@ public class NotificationEventListener {
 
     public NotificationEventListener(ConsultationRepository consultationRepository,
                                      NotificationRepository notificationRepository,
-                                     AppointmentRepository appointmentRepository, // Inyectar
-                                     PatientRepository patientRepository, // Inyectar
+                                     AppointmentRepository appointmentRepository,
+                                     PatientRepository patientRepository,
                                      RestTemplate restTemplate) {
         this.consultationRepository = consultationRepository;
         this.notificationRepository = notificationRepository;
@@ -60,12 +60,12 @@ public class NotificationEventListener {
 
         Consultation consultation = oc.get();
 
-        // REGLA DE NEGOCIO: Evitar spam.
-        // Solo enviar confirmación inmediata si la cita es para dentro de más de 48 horas.
-        // De lo contrario, el scheduler de 24h se encargará.
+        // BUSINESS RULE: Avoid spam.
+        // Only send immediate confirmation if appointment is more than 48 hours away.
+        // Otherwise, the 24h scheduler will handle it.
         OffsetDateTime limit = OffsetDateTime.now().plusDays(2);
         if (consultation.getConsultationDate() != null && consultation.getConsultationDate().isBefore(limit)) {
-            return; // No enviar confirmación inmediata.
+            return; // Do not send immediate confirmation.
         }
 
         sendNotification(consultation, "CONFIRMATION");
@@ -82,7 +82,7 @@ public class NotificationEventListener {
         Appointment appointment = oa.get();
         if (appointment.getConsultation() == null) return;
 
-        // Enviamos notificación de cancelación basándonos en la consulta vinculada
+        // Send cancellation notification based on linked consultation
         sendNotification(appointment.getConsultation(), "CANCELLATION");
     }
 

@@ -12,7 +12,7 @@ public class DoctorSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Prevención de NullPointerException y protección case-insensitive
+            // Prevent NullPointerException and case-insensitive protection
             if (fullName != null && !fullName.trim().isEmpty()) {
                 predicates.add(criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("fullName")),
@@ -27,7 +27,7 @@ public class DoctorSpecification {
                 ));
             }
 
-            // Búsqueda estricta por boolean
+            // Strict search by boolean
             if (isActive != null) {
                 predicates.add(criteriaBuilder.equal(root.get("isActive"), isActive));
             }

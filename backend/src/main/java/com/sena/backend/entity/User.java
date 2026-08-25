@@ -33,7 +33,7 @@ public class User implements UserDetails {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    // --- Implementación de UserDetails ---
+    // --- UserDetails Implementation ---
 
     @Override
     public boolean isAccountNonExpired() { return true; }
