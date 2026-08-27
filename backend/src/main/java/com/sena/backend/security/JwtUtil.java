@@ -29,10 +29,15 @@ public class JwtUtil {
 
     private final ObjectMapper om = new ObjectMapper();
 
-    public String generateToken(String username) throws Exception {
+    public String generateToken(String username, String role) throws Exception {
         long exp = Instant.now().plusSeconds(expMinutes * 60).getEpochSecond();
-        Map<String, Object> header = new HashMap<>(); header.put("alg","HS256"); header.put("typ","JWT");
-        Map<String, Object> payload = new HashMap<>(); payload.put("sub", username); payload.put("exp", exp);
+        Map<String, Object> header = new HashMap<>();
+        header.put("alg", "HS256");
+        header.put("typ","JWT");
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sub", username);
+        payload.put("exp", exp);
+        payload.put("role", role);
         String headerJson = om.writeValueAsString(header);
         String payloadJson = om.writeValueAsString(payload);
         String headerB64 = base64UrlEncode(headerJson.getBytes(StandardCharsets.UTF_8));

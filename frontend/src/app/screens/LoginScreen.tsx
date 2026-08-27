@@ -1,14 +1,42 @@
-import { User, mockUsers } from '../types/user';
-import { Stethoscope, Activity, Heart, Pill } from 'lucide-react';
+import { useState } from 'react';
+import type { FormEventHandler } from 'react';
+import { Activity, Heart, Pill, Stethoscope } from 'lucide-react';
+import { login as loginRequest } from '../../service/api';
+import { User } from '../types/user';
 
 interface LoginScreenProps {
   onLogin: (user: User) => void;
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin123');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
+    event.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await loginRequest(username.trim(), password);
+      onLogin(response.user);
+    } catch (err: any) {
+      // Intenta extraer 'mensaje' o 'message' del JSON del backend. 
+      // Si no existe, usa el error genérico o un texto por defecto.
+      const backendMessage = err.response?.data?.mensaje 
+                          || err.response?.data?.message 
+                          || 'Credenciales inválidas o error de conexión';
+      
+      setError(backendMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   return (
     <div className="w-full h-screen flex bg-[#F4F7F9]">
-      {/* Lado izquierdo - Ilustración médica */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#2C7A7B] to-[#455A73] p-12 flex-col justify-center items-center relative overflow-hidden">
         <div className="absolute top-10 right-10 opacity-20">
           <Heart className="w-32 h-32 text-white" />
@@ -34,7 +62,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </div>
       </div>
 
-      {/* Lado derecho - Formulario de login */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="bg-white p-10 rounded-xl shadow-[0_6px_16px_rgba(0,0,0,0.12)] w-full max-w-md">
           <div className="mb-8 text-center lg:hidden">
@@ -44,40 +71,53 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
           <div className="mb-8">
             <h2 className="text-[#1E293B] text-2xl font-bold mb-2">Bienvenido</h2>
-            <p className="text-[#64748B] text-sm">Seleccione un usuario para iniciar sesión (Demo)</p>
+            <p className="text-[#64748B] text-sm">Ingrese sus credenciales para acceder al sistema</p>
           </div>
 
-          <div className="space-y-3">
-            {mockUsers.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => onLogin(user)}
-                className="w-full flex items-center gap-4 p-4 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-lg hover:border-[#2C7A7B] hover:bg-white transition-all group"
-              >
-                <div className="w-12 h-12 bg-[#2C7A7B] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span className="text-white font-semibold">
-                    {user.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="text-[#1E293B] font-semibold">{user.name}</div>
-                  <div className="text-[#64748B] text-sm">
-                    {user.role === 'ADMIN' && 'Administrador'}
-                    {user.role === 'DOCTOR' && 'Médico'}
-                    {user.role === 'RECEPTIONIST' && 'Recepcionista'}
-                  </div>
-                </div>
-                <div className="text-[#2C7A7B] opacity-0 group-hover:opacity-100 transition-opacity">
-                  →
-                </div>
-              </button>
-            ))}
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[#334155] mb-2">Usuario</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 border border-[#CBD5E1] rounded-lg focus:outline-none focus:border-[#2C7A7B]"
+                placeholder="admin"
+                autoComplete="username"
+              />
+            </div>
 
-          <div className="mt-8 text-center">
-            <a href="#" className="text-[#64748B] text-sm hover:text-[#2C7A7B]">
-              ¿Problemas para ingresar? Contacte al administrador
-            </a>
+            <div>
+              <label className="block text-sm font-medium text-[#334155] mb-2">Contraseña</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-[#CBD5E1] rounded-lg focus:outline-none focus:border-[#2C7A7B]"
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+            </div>
+
+            {error ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                {error}
+              </div>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full mt-2 bg-[#2C7A7B] text-white font-medium py-3 rounded-lg hover:bg-[#256d6f] transition-colors disabled:opacity-60"
+            >
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-sm text-[#64748B]">
+            <p>Credencial por defecto del backend:</p>
+            <p className="mt-1 font-medium text-[#1E293B]">Usuario: admin</p>
+            <p className="font-medium text-[#1E293B]">Contraseña: admin123</p>
           </div>
         </div>
       </div>

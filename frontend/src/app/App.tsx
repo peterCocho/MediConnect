@@ -16,6 +16,7 @@ import { AgendaGlobalScreen } from "./screens/AgendaGlobalScreen";
 import { MiAgendaScreen } from "./screens/MiAgendaScreen";
 import { MisPacientesScreen } from "./screens/MisPacientesScreen";
 import { AdministracionPlantillasScreen } from "./screens/AdministracionPlantillasScreen";
+import { logout } from "../service/api";
 import { User } from "./types/user";
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
   }
 
   const handleLogout = () => {
+    logout();
     setCurrentUser(null);
     setActiveScreen("dashboard");
   };
