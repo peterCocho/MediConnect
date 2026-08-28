@@ -22,6 +22,31 @@ const isTokenExpired = (token) => {
 
 const getToken = () => localStorage.getItem('token');
 
+const normalizeRole = (roleValue) => {
+  const normalized = (roleValue || '').toUpperCase();
+  if (normalized === 'ROLE_ADMIN' || normalized === 'ADMIN') return 'ADMIN';
+  if (normalized === 'ROLE_DOCTOR' || normalized === 'DOCTOR') return 'DOCTOR';
+  if (normalized === 'ROLE_RECEPTION' || normalized === 'ROLE_RECEPTIONIST' || normalized === 'RECEPTIONIST') return 'RECEPTIONIST';
+  return null;
+};
+
+export const getUserFromToken = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = normalizeRole(payload.role);
+    if (!payload.sub || !role || (payload.exp && payload.exp < Date.now() / 1000)) return null;
+
+    return {
+      id: payload.sub,
+      name: payload.sub === 'admin' ? 'Admin User' : payload.sub,
+      email: `${payload.sub}@mediconnect.local`,
+      role,
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
 export const clearSession = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('userEmail');
@@ -76,43 +101,16 @@ export const login = async (username, password) => {
   localStorage.setItem('userEmail', `${username}@mediconnect.local`);
   localStorage.setItem('isLoggedIn', 'true');
 
-  // Normalize role to ensure UI consistency regardless of backend format variations
-  const normalizeRole = (roleValue) => {
-    const normalized = (roleValue || '').toUpperCase();
-    if (normalized === 'ROLE_ADMIN' || normalized === 'ADMIN') return 'ADMIN';
-    if (normalized === 'ROLE_DOCTOR' || normalized === 'DOCTOR') return 'DOCTOR';
-    if (normalized === 'ROLE_RECEPTION' || normalized === 'ROLE_RECEPTIONIST' || normalized === 'RECEPTIONIST') return 'RECEPTIONIST';
-    return 'DOCTOR'; // Default fallback
-  };
-
   try {
-    // Decode JWT payload and extract embedded claims
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const normalizedUsername = payload.sub || username;
-    
-    // Read the role directly from the payload injected by the backend
-    const mappedRole = normalizeRole(payload.role);
-
-    return {
-      user: {
-        id: normalizedUsername,
-        name: normalizedUsername === 'admin' ? 'Admin User' : normalizedUsername,
-        email: `${normalizedUsername}@mediconnect.local`,
-        role: mappedRole,
-      },
-      token,
-    };
+    const user = getUserFromToken(token);
+      if (!user) {
+        clearSession();
+        throw new Error('El token no contiene un rol válido');
+      }
+    return { user, token };
   } catch (error) {
-    // Fallback if token parsing fails to prevent full application crash
-    return {
-      user: {
-        id: username,
-        name: username,
-        email: `${username}@mediconnect.local`,
-        role: 'DOCTOR',
-      },
-      token,
-    };
+    clearSession();
+    throw error;
   }
 };
 

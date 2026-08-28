@@ -1,100 +1,84 @@
-// @ts-nocheck
-import { useState } from "react";
-import { Sidebar } from "./components/Sidebar";
-import { Header } from "./components/Header";
-import { LoginScreen } from "./screens/LoginScreen";
-import { DashboardScreen } from "./screens/DashboardScreen";
-import { PacientesScreen } from "./screens/PacientesScreen";
-import { UsuariosScreen } from "./screens/UsuariosScreen";
-import { AgendamientoScreen } from "./screens/AgendamientoScreen";
-import { HistorialScreen } from "./screens/HistorialScreen";
-import { ConsultaScreen } from "./screens/ConsultaScreen";
-import { ReportesScreen } from "./screens/ReportesScreen";
-import { NotificacionesScreen } from "./screens/NotificacionesScreen";
-import { RegistroPacienteScreen } from "./screens/RegistroPacienteScreen";
-import { AgendaGlobalScreen } from "./screens/AgendaGlobalScreen";
-import { MiAgendaScreen } from "./screens/MiAgendaScreen";
-import { MisPacientesScreen } from "./screens/MisPacientesScreen";
-import { AdministracionPlantillasScreen } from "./screens/AdministracionPlantillasScreen";
-import { logout } from "../service/api";
-import { User } from "./types/user";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router';
+import { Sidebar } from './components/Sidebar';
+import { Header } from './components/Header';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { LoginScreen } from './screens/LoginScreen';
+import { DashboardScreen } from './screens/DashboardScreen';
+import { PacientesScreen } from './screens/PacientesScreen';
+import { UsuariosScreen } from './screens/UsuariosScreen';
+import { AgendamientoScreen } from './screens/AgendamientoScreen';
+import { HistorialScreen } from './screens/HistorialScreen';
+import { ConsultaScreen } from './screens/ConsultaScreen';
+import { ReportesScreen } from './screens/ReportesScreen';
+import { NotificacionesScreen } from './screens/NotificacionesScreen';
+import { RegistroPacienteScreen } from './screens/RegistroPacienteScreen';
+import { AgendaGlobalScreen } from './screens/AgendaGlobalScreen';
+import { MiAgendaScreen } from './screens/MiAgendaScreen';
+import { MisPacientesScreen } from './screens/MisPacientesScreen';
+import { AdministracionPlantillasScreen } from './screens/AdministracionPlantillasScreen';
+import type { ReactNode } from 'react';
+import type { UserRole } from './types/user';
 
-export default function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(
-    null,
-  );
-  const [activeScreen, setActiveScreen] = useState("dashboard");
-
-  if (!currentUser) {
-    return (
-      <LoginScreen onLogin={(user) => setCurrentUser(user)} />
-    );
-  }
-
-  const handleLogout = () => {
-    logout();
-    setCurrentUser(null);
-    setActiveScreen("dashboard");
-  };
-
-  const renderScreen = () => {
-    switch (activeScreen) {
-      case "dashboard":
-        return <DashboardScreen />;
-      case "pacientes":
-        if (currentUser.role === "RECEPTIONIST")
-          return <RegistroPacienteScreen />;
-        if (currentUser.role === "DOCTOR")
-          return (
-            <MisPacientesScreen
-              onVerHistorial={() =>
-                setActiveScreen("historial")
-              }
-            />
-          );
-        return <PacientesScreen />;
-      case "usuarios":
-        return <UsuariosScreen />;
-      case "plantillas":
-        return <AdministracionPlantillasScreen />;
-      case "agendamiento":
-        return <AgendamientoScreen />;
-      case "mi-agenda":
-        return (
-          <MiAgendaScreen
-            onIniciarConsulta={() =>
-              setActiveScreen("consulta")
-            }
-          />
-        );
-      case "citas-global":
-        return <AgendaGlobalScreen />;
-      case "historial":
-        return <HistorialScreen />;
-      case "consulta":
-        return <ConsultaScreen />;
-      case "reportes":
-        return <ReportesScreen />;
-      case "notificaciones":
-        return <NotificacionesScreen />;
-      default:
-        return <DashboardScreen />;
-    }
-  };
+function Layout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  if (!user) return null;
 
   return (
     <div className="flex h-screen bg-[#F4F7F9]">
-      <Sidebar
-        activeScreen={activeScreen}
-        onNavigate={setActiveScreen}
-        userRole={currentUser.role}
-      />
+      <Sidebar activeScreen={location.pathname.slice(1) || 'dashboard'} onNavigate={(screen) => navigate(`/${screen}`)} userRole={user.role} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={currentUser} onLogout={handleLogout} />
-        <div className="flex-1 overflow-auto">
-          {renderScreen()}
-        </div>
+        <Header user={user} onLogout={logout} />
+        <main className="flex-1 overflow-auto"><Outlet /></main>
       </div>
     </div>
   );
+}
+
+function RoleRoute({ roles, children }: { roles: UserRole[]; children: ReactNode }) {
+  const { user } = useAuth();
+  return user && roles.includes(user.role) ? <>{children}</> : <Navigate to="/dashboard" replace />;
+}
+
+function PatientsRoute() {
+  const { user } = useAuth();
+  if (user?.role === 'RECEPTIONIST') return <RegistroPacienteScreen />;
+  if (user?.role === 'DOCTOR') return <MisPacientesScreen onVerHistorial={() => {}} />;
+  return <PacientesScreen />;
+}
+
+function DoctorAgendaRoute() {
+  const navigate = useNavigate();
+  return <MiAgendaScreen onIniciarConsulta={() => navigate('/consulta')} />;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginScreen />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<DashboardScreen />} />
+          <Route path="/pacientes" element={<PatientsRoute />} />
+          <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsuariosScreen /></RoleRoute>} />
+          <Route path="/plantillas" element={<RoleRoute roles={['ADMIN']}><AdministracionPlantillasScreen /></RoleRoute>} />
+          <Route path="/citas-global" element={<RoleRoute roles={['ADMIN']}><AgendaGlobalScreen /></RoleRoute>} />
+          <Route path="/reportes" element={<RoleRoute roles={['ADMIN']}><ReportesScreen /></RoleRoute>} />
+          <Route path="/agendamiento" element={<RoleRoute roles={['RECEPTIONIST']}><AgendamientoScreen /></RoleRoute>} />
+          <Route path="/notificaciones" element={<RoleRoute roles={['RECEPTIONIST']}><NotificacionesScreen /></RoleRoute>} />
+          <Route path="/mi-agenda" element={<RoleRoute roles={['DOCTOR']}><DoctorAgendaRoute /></RoleRoute>} />
+          <Route path="/historial" element={<RoleRoute roles={['DOCTOR']}><HistorialScreen /></RoleRoute>} />
+          <Route path="/consulta" element={<RoleRoute roles={['DOCTOR']}><ConsultaScreen /></RoleRoute>} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return <AuthProvider><BrowserRouter><AppRoutes /></BrowserRouter></AuthProvider>;
 }
