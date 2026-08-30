@@ -7,6 +7,7 @@ import { LoginScreen } from './screens/LoginScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { PacientesScreen } from './screens/PacientesScreen';
 import { UsuariosScreen } from './screens/UsuariosScreen';
+import { RecepcionistasScreen } from './screens/RecepcionistasScreen';
 import { AgendamientoScreen } from './screens/AgendamientoScreen';
 import { HistorialScreen } from './screens/HistorialScreen';
 import { ConsultaScreen } from './screens/ConsultaScreen';
@@ -27,9 +28,9 @@ function Layout() {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-[#F4F7F9]">
+    <div className="flex min-h-screen flex-col bg-[#F4F7F9] md:flex-row">
       <Sidebar activeScreen={location.pathname.slice(1) || 'dashboard'} onNavigate={(screen) => navigate(`/${screen}`)} userRole={user.role} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Header user={user} onLogout={logout} />
         <main className="flex-1 overflow-auto"><Outlet /></main>
       </div>
@@ -44,14 +45,18 @@ function RoleRoute({ roles, children }: { roles: UserRole[]; children: ReactNode
 
 function PatientsRoute() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   if (user?.role === 'RECEPTIONIST') return <RegistroPacienteScreen />;
-  if (user?.role === 'DOCTOR') return <MisPacientesScreen onVerHistorial={() => {}} />;
+  if (user?.role === 'DOCTOR') {
+    return <MisPacientesScreen onVerHistorial={(medicalRecordId) => navigate(`/historial?medicalRecordId=${medicalRecordId}`)} />;
+  }
   return <PacientesScreen />;
 }
 
 function DoctorAgendaRoute() {
   const navigate = useNavigate();
-  return <MiAgendaScreen onIniciarConsulta={() => navigate('/consulta')} />;
+  return <MiAgendaScreen onIniciarConsulta={(consultationId) => navigate(`/consulta?consultationId=${consultationId}`)} />;
 }
 
 function AppRoutes() {
@@ -63,6 +68,7 @@ function AppRoutes() {
           <Route path="/dashboard" element={<DashboardScreen />} />
           <Route path="/pacientes" element={<PatientsRoute />} />
           <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsuariosScreen /></RoleRoute>} />
+          <Route path="/recepcionistas" element={<RoleRoute roles={['ADMIN']}><RecepcionistasScreen /></RoleRoute>} />
           <Route path="/plantillas" element={<RoleRoute roles={['ADMIN']}><AdministracionPlantillasScreen /></RoleRoute>} />
           <Route path="/citas-global" element={<RoleRoute roles={['ADMIN']}><AgendaGlobalScreen /></RoleRoute>} />
           <Route path="/reportes" element={<RoleRoute roles={['ADMIN']}><ReportesScreen /></RoleRoute>} />

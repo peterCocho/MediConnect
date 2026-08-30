@@ -37,6 +37,8 @@ const MediConnectBrandIcon = ({ className = "w-5 h-5 text-[#455A73]" }) => (
   </svg>
 );
 
+
+
 interface SidebarProps {
   activeScreen: string;
   onNavigate: (screen: string) => void;
@@ -62,6 +64,12 @@ const allMenuItems: MenuItem[] = [
   {
     id: "usuarios",
     label: "Gestión de Usuarios",
+    icon: UserCog,
+    roles: ["ADMIN"],
+  },
+  {
+    id: "recepcionistas",
+    label: "Recepcionistas",
     icon: UserCog,
     roles: ["ADMIN"],
   },
@@ -141,20 +149,17 @@ export function Sidebar({
   );
 
   return (
-    <div className="w-64 bg-[#455A73] h-screen flex flex-col">
-      <div className="p-6 border-b border-[#334155]">
-        <div className="flex items-center gap-2">
-          {/* Replace generic '+' with the custom abstract logo */}
-          <div className="w-8 h-8 bg-[#8CD6D1] rounded-lg flex items-center justify-center">
-            <MediConnectBrandIcon className="w-5 h-5 text-[#455A73]" />
+    <aside className="w-full bg-[#455A73] text-white md:w-64 md:min-h-screen md:flex md:flex-col">
+      <div className="border-b border-[#334155] p-4 md:p-6">
+        <div className="flex items-center justify-center gap-2 md:justify-start">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8CD6D1]">
+            <MediConnectBrandIcon className="h-5 w-5 text-[#455A73]" />
           </div>
-          <h1 className="text-white text-xl font-bold">
-            MediConnect
-          </h1>
+          <h1 className="text-lg font-bold md:text-xl">MediConnect</h1>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-4 overflow-y-auto">
+      <nav className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:overflow-y-auto md:px-4 md:py-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreen === item.id;
@@ -163,24 +168,24 @@ export function Sidebar({
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all ${
+              className={`flex min-w-max items-center gap-2 rounded-lg px-3 py-2 text-left transition-all md:w-full md:gap-3 md:px-4 md:py-3 ${
                 isActive
-                  ? "bg-[#334155] border-l-4 border-[#8CD6D1] text-white font-semibold"
+                  ? "border-l-0 bg-[#334155] font-semibold text-white md:border-l-4 md:border-[#8CD6D1]"
                   : "text-[#CBD5E1] hover:bg-[#334155] hover:text-white"
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-sm">{item.label}</span>
+              <Icon className="h-4 w-4 shrink-0 md:h-5 md:w-5" />
+              <span className="text-xs md:text-sm">{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-[#334155]">
-        <div className="text-[#94A3B8] text-xs text-center">
+      <div className="border-t border-[#334155] p-3 md:p-4">
+        <div className="text-center text-[10px] text-[#94A3B8] md:text-xs">
           MediConnect v1.0
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

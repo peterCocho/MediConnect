@@ -14,50 +14,52 @@ const roleLabels = {
 
 export function Header({ user, onLogout }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-[#E2E8F0] px-8 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
+    <header className="border-b border-[#E2E8F0] bg-white px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             placeholder="Búsqueda global..."
-            className="w-96 px-4 py-2 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-sm text-[#1E293B] focus:outline-none focus:border-[#2C7A7B]"
+            className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-sm text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none lg:w-96"
           />
         </div>
 
-        <div className="flex items-center gap-4">
-          <button className="relative p-2 hover:bg-[#F8FAFC] rounded-lg transition-colors">
-            <Bell className="w-5 h-5 text-[#64748B]" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-[#EF4444] rounded-full"></span>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
+          <div className="flex items-center gap-2">
+            <button className="relative rounded-lg p-2 transition-colors hover:bg-[#F8FAFC]">
+              <Bell className="h-5 w-5 text-[#64748B]" />
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#EF4444]"></span>
+            </button>
 
-          <button className="relative p-2 hover:bg-[#F8FAFC] rounded-lg transition-colors">
-            <Mail className="w-5 h-5 text-[#64748B]" />
-          </button>
+            <button className="relative rounded-lg p-2 transition-colors hover:bg-[#F8FAFC]">
+              <Mail className="h-5 w-5 text-[#64748B]" />
+            </button>
+          </div>
 
-          <div className="h-8 w-px bg-[#E2E8F0]"></div>
+          <div className="hidden h-8 w-px bg-[#E2E8F0] lg:block"></div>
 
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#2C7A7B] rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">
-                {user.name.split(' ').map(n => n[0]).join('')}
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2C7A7B]">
+              <span className="text-sm font-semibold text-white">
+                {user.name.split(' ').map((n) => n[0]).join('')}
               </span>
             </div>
 
-            <div className="flex flex-col">
-              <span className="text-[#1E293B] text-sm font-medium">{user.name}</span>
-              <span className="text-[#64748B] text-xs">{roleLabels[user.role]}</span>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-[#1E293B]">{user.name}</span>
+              <span className="text-xs text-[#64748B]">{roleLabels[user.role]}</span>
             </div>
 
-            <button className="p-1 hover:bg-[#F8FAFC] rounded transition-colors group">
-              <ChevronDown className="w-4 h-4 text-[#64748B] group-hover:text-[#1E293B]" />
+            <button className="rounded transition-colors hover:bg-[#F8FAFC] group">
+              <ChevronDown className="h-4 w-4 text-[#64748B] group-hover:text-[#1E293B]" />
             </button>
 
             <button
               onClick={onLogout}
-              className="ml-2 p-2 hover:bg-[#FEE2E2] rounded-lg transition-colors group"
+              className="rounded-lg p-2 transition-colors hover:bg-[#FEE2E2] group"
               title="Cerrar sesión"
             >
-              <LogOut className="w-5 h-5 text-[#64748B] group-hover:text-[#EF4444]" />
+              <LogOut className="h-5 w-5 text-[#64748B] group-hover:text-[#EF4444]" />
             </button>
           </div>
         </div>

@@ -1,100 +1,138 @@
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import api from '../../service/api';
 
-export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: () => void }) {
-  // Solo citas del Dr. Carlos Ramírez - Privacidad de datos
-  const citasHoy = [
-    { hora: '09:00', paciente: 'María González García', identificacion: '1091234567', estado: 'Confirmada', medico: 'Dr. Ramírez' },
-    { hora: '11:00', paciente: 'Laura Sánchez Torres', identificacion: '1065432109', estado: 'Confirmada', medico: 'Dr. Ramírez' },
-    { hora: '14:00', paciente: 'Carlos Rodríguez Silva', identificacion: '1076543210', estado: 'Confirmada', medico: 'Dr. Ramírez' },
-  ];
+type ConsultationRow = {
+  id: number;
+  consultationDate: string;
+  status: string;
+  medicalRecordId: number | null;
+  doctorId: number | null;
+};
+
+export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (consultationId: number) => void }) {
+  const [consultas, setConsultas] = useState<ConsultationRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadAgenda = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+        const response = await api.get('/api/consultations', {
+          params: { page: 0, size: 20, sort: 'consultationDate,desc' },
+        });
+        setConsultas(response.data?.content ?? []);
+      } catch (err) {
+        setError('No se pudo cargar la agenda del doctor.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAgenda();
+  }, []);
+
+  const agenda = useMemo(() => {
+    return (consultas ?? []).filter((consulta) => consulta.status === 'SCHEDULED');
+  }, [consultas]);
+
+  const formatHour = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4F7F9] p-8">
+        <div className="flex items-center justify-center gap-3 py-12 text-[#64748B]">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Cargando agenda...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 bg-[#F4F7F9] min-h-screen">
+    <div className="min-h-screen bg-[#F4F7F9] p-8">
       <div className="mb-8">
-        <h1 className="text-[#1E293B] text-3xl font-bold mb-2">Mi Agenda</h1>
-        <p className="text-[#64748B]">Citas programadas para hoy - {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <h1 className="mb-2 text-3xl font-bold text-[#1E293B]">Mi Agenda</h1>
+        <p className="text-[#64748B]">Consultas programadas del médico autenticado</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#8CD6D1] bg-opacity-20 rounded-lg">
-              <Calendar className="w-6 h-6 text-[#2C7A7B]" />
+      <div className="mb-8 grid grid-cols-2 gap-6">
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
+              <Calendar className="h-6 w-6 text-[#2C7A7B]" />
             </div>
-            <span className="text-[#64748B] text-sm">Hoy</span>
+            <span className="text-sm text-[#64748B]">Hoy</span>
           </div>
-          <h3 className="text-[#1E293B] text-3xl font-bold mb-1">{citasHoy.length}</h3>
-          <p className="text-[#64748B] text-sm">Pacientes Programados</p>
+          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{agenda.length}</h3>
+          <p className="text-sm text-[#64748B]">Pacientes programados</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#10B981] bg-opacity-20 rounded-lg">
-              <Clock className="w-6 h-6 text-[#10B981]" />
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="rounded-lg bg-[#10B981] bg-opacity-20 p-3">
+              <Clock className="h-6 w-6 text-[#10B981]" />
             </div>
-            <span className="text-[#64748B] text-sm">Estado</span>
+            <span className="text-sm text-[#64748B]">Estado</span>
           </div>
-          <h3 className="text-[#1E293B] text-3xl font-bold mb-1">
-            {citasHoy.filter(c => c.estado === 'Confirmada').length}
-          </h3>
-          <p className="text-[#64748B] text-sm">Confirmadas</p>
+          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{agenda.filter((c) => c.status === 'SCHEDULED').length}</h3>
+          <p className="text-sm text-[#64748B]">Programadas</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
-        <div className="p-6 bg-[#F8FAFC] border-b border-[#E2E8F0] rounded-t-xl">
-          <h2 className="text-[#1E293B] text-xl font-semibold">Listado Secuencial de Pacientes</h2>
+      <div className="rounded-xl border border-[#CBD5E1] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+        <div className="rounded-t-xl border-b border-[#E2E8F0] bg-[#F8FAFC] p-6">
+          <h2 className="text-xl font-semibold text-[#1E293B]">Listado de pacientes agendados</h2>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Hora</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Nombre del Paciente</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Identificación</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {citasHoy.map((cita, index) => (
-                <tr key={index} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                  <td className="px-6 py-4 text-[#1E293B] text-sm font-semibold">{cita.hora}</td>
-                  <td className="px-6 py-4 text-[#1E293B] text-sm">{cita.paciente}</td>
-                  <td className="px-6 py-4 text-[#64748B] text-sm">{cita.identificacion}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-2 text-sm ${
-                      cita.estado === 'Confirmada' ? 'text-[#10B981]' : 'text-[#F59E0B]'
-                    }`}>
-                      <span className={`w-2 h-2 rounded-full ${
-                        cita.estado === 'Confirmada' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'
-                      }`} />
-                      {cita.estado}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={onIniciarConsulta}
-                      className="px-6 py-2 bg-[#2C7A7B] text-white text-sm font-semibold rounded-lg hover:bg-[#235E5F] transition-colors"
-                    >
-                      Iniciar Consulta
-                    </button>
-                  </td>
+        {error ? (
+          <div className="px-6 py-8 text-center text-red-600">{error}</div>
+        ) : agenda.length === 0 ? (
+          <div className="px-6 py-10 text-center text-[#64748B]">No hay consultas programadas para este médico.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Hora</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Expediente</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Fecha</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Estado</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Acción</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="p-6 bg-[#F8FAFC] border-t border-[#E2E8F0] rounded-b-xl">
-          <div className="flex items-center gap-2 text-sm text-[#64748B]">
-            <span>ℹ️</span>
-            <p>
-              El botón "Iniciar Consulta" abrirá el registro clínico del paciente. Los médicos no gestionan citas administrativas.
-            </p>
+              </thead>
+              <tbody>
+                {agenda.map((consulta) => (
+                  <tr key={consulta.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
+                    <td className="px-6 py-4 text-sm font-semibold text-[#1E293B]">{formatHour(consulta.consultationDate)}</td>
+                    <td className="px-6 py-4 text-sm text-[#1E293B]">#{consulta.medicalRecordId ?? '—'}</td>
+                    <td className="px-6 py-4 text-sm text-[#64748B]">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-2 text-sm text-[#10B981]">
+                        <span className="h-2 w-2 rounded-full bg-[#10B981]" />
+                        {consulta.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={() => onIniciarConsulta?.(consulta.id)}
+                        className="rounded-lg bg-[#2C7A7B] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#235E5F]"
+                      >
+                        Iniciar Consulta
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

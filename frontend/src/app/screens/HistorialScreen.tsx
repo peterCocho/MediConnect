@@ -1,114 +1,118 @@
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import api from '../../service/api';
+
+type Consultation = {
+  id: number;
+  consultationDate: string;
+  status: string;
+  reasonForVisit: string;
+  clinicalNotes: string;
+  managementPlan: string;
+  icd10Code: string;
+  doctorId: number;
+  medicalRecordId: number;
+};
+
 export function HistorialScreen() {
-  const consultas = [
-    {
-      fecha: "2024-05-15",
-      medico: "Dr. Carlos Ramírez",
-      diagnostico: "I10 - Hipertensión Esencial",
-      especialidad: "Cardiología",
-    },
-    {
-      fecha: "2024-01-20",
-      medico: "Dr. Carlos Ramírez",
-      diagnostico: "E11 - Diabetes Mellitus",
-      especialidad: "Cardiología",
-    },
-  ];
+  const [searchParams] = useSearchParams();
+  const [consultas, setConsultas] = useState<Consultation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const medicalRecordId = searchParams.get('medicalRecordId');
+
+  useEffect(() => {
+    const loadTimeline = async () => {
+      if (!medicalRecordId) {
+        setError('No se ha seleccionado un expediente médico para consultar el historial.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await api.get(`/api/consultations/patient-timeline/${medicalRecordId}`);
+        setConsultas(response.data ?? []);
+        setError('');
+      } catch (err) {
+        setError('No se pudo cargar el historial clínico.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTimeline();
+  }, [medicalRecordId]);
 
   return (
-    <div className="p-8 bg-[#F4F7F9] min-h-screen">
+    <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-[#1E293B] text-3xl font-bold mb-2">
-          Historial Clínico
-        </h1>
-        <p className="text-[#64748B]">
-          Registro cronológico de atenciones médicas
-        </p>
+        <h1 className="mb-2 text-2xl font-bold text-[#1E293B] sm:text-3xl">Historial Clínico</h1>
+        <p className="text-sm text-[#64748B] sm:text-base">Registro cronológico de atenciones médicas</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-[0_2px_4px_rgba(0,0,0,0.05)] p-8">
-        <div className="mb-6 p-4 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
-          <h3 className="text-[#1E293B] font-semibold mb-2">
-            Paciente: María González García
-          </h3>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="text-[#64748B]">
-                Identificación:
-              </span>
-              <span className="text-[#1E293B] ml-2">
-                1091234567
-              </span>
-            </div>
-            <div>
-              <span className="text-[#64748B]">Edad:</span>
-              <span className="text-[#1E293B] ml-2">
-                39 años
-              </span>
-            </div>
-            <div>
-              <span className="text-[#64748B]">
-                N° Expediente:
-              </span>
-              <span className="text-[#1E293B] ml-2">
-                HC-1091234567
-              </span>
-            </div>
+      <div className="rounded-xl border border-[#CBD5E1] bg-white p-5 shadow-[0_2px_4px_rgba(0,0,0,0.05)] sm:p-8">
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-3 py-12 text-[#64748B]">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Cargando historial clínico...</span>
           </div>
-        </div>
+        ) : error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center text-red-600">{error}</div>
+        ) : (
+          <>
+            <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+              <h3 className="mb-2 font-semibold text-[#1E293B]">Paciente</h3>
+              <p className="text-sm text-[#64748B]">Expediente médico #{medicalRecordId ?? 'N/A'}</p>
+            </div>
 
-        <div className="relative">
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-[#CBD5E1]"></div>
+            <div className="relative">
+              <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-[#CBD5E1]" />
 
-          <div className="space-y-8">
-            {consultas.map((consulta, index) => (
-              <div key={index} className="relative pl-12">
-                <div className="absolute left-0 top-2 w-4 h-4 bg-[#8CD6D1] rounded-full border-2 border-white shadow-md"></div>
+              <div className="space-y-8">
+                {consultas.length === 0 ? (
+                  <div className="pl-12 text-[#64748B]">No hay consultas registradas en el historial.</div>
+                ) : (
+                  consultas.map((consulta) => (
+                    <div key={consulta.id} className="relative pl-12">
+                      <div className="absolute left-0 top-2 h-4 w-4 rounded-full border-2 border-white bg-[#8CD6D1] shadow-md" />
 
-                <div className="bg-[#F8FAFC] p-6 rounded-lg border border-[#E2E8F0] hover:border-[#8CD6D1] transition-colors cursor-pointer">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="text-[#1E293B] font-semibold mb-1">
-                        {consulta.fecha}
-                      </h4>
-                      <p className="text-[#64748B] text-sm">
-                        {consulta.especialidad}
-                      </p>
+                      <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 hover:border-[#8CD6D1]">
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <div>
+                            <h4 className="font-semibold text-[#1E293B]">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</h4>
+                            <p className="text-sm text-[#64748B]">{consulta.status}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <span className="text-[#64748B]">Médico ID:</span>
+                            <span className="ml-2 font-medium text-[#1E293B]">{consulta.doctorId}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#64748B]">Diagnóstico:</span>
+                            <span className="ml-2 font-medium text-[#1E293B]">{consulta.icd10Code || 'No registrado'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#64748B]">Motivo:</span>
+                            <span className="ml-2 text-[#1E293B]">{consulta.reasonForVisit || 'Sin motivo registrado'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#64748B]">Plan:</span>
+                            <span className="ml-2 text-[#1E293B]">{consulta.managementPlan || 'Sin plan registrado'}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <button className="px-4 py-2 bg-white text-[#475569] text-sm border border-[#CBD5E1] rounded hover:bg-[#E2E8F0]">
-                      Ver Detalles
-                    </button>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-[#64748B]">
-                        Médico:
-                      </span>
-                      <span className="text-[#1E293B] ml-2">
-                        {consulta.medico}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[#64748B]">
-                        Diagnóstico:
-                      </span>
-                      <span className="text-[#1E293B] ml-2 font-medium">
-                        {consulta.diagnostico}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8 p-4 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0] text-center">
-          <p className="text-[#64748B] text-sm">
-            Las consultas anteriores son de solo lectura y no
-            pueden ser modificadas
-          </p>
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

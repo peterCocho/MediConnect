@@ -1,77 +1,141 @@
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import api from '../../service/api';
 
-export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: () => void }) {
-  const pacientesAsignados = [
-    { id: '1091234567', nombre: 'María González García', telefono: '+57 300 123 4567', fechaNacimiento: '1985-03-15', ultimaConsulta: '2024-05-15' },
-    { id: '1098765432', nombre: 'Juan Pérez Martínez', telefono: '+57 301 234 5678', fechaNacimiento: '1990-07-22', ultimaConsulta: '2024-05-10' },
-    { id: '1087654321', nombre: 'Ana Martínez López', telefono: '+57 302 345 6789', fechaNacimiento: '1978-11-30', ultimaConsulta: '2024-05-08' },
-    { id: '1076543210', nombre: 'Carlos Rodríguez Silva', telefono: '+57 303 456 7890', fechaNacimiento: '1995-05-18', ultimaConsulta: '2024-04-20' },
-    { id: '1065432109', nombre: 'Laura Sánchez Torres', telefono: '+57 304 567 8901', fechaNacimiento: '1988-09-12', ultimaConsulta: '2024-04-15' },
-  ];
+type PatientRow = {
+  id: number;
+  identityDocument: string;
+  fullName: string;
+  phone: string;
+  birthDate: string | null;
+  medicalRecordId?: number | null;
+};
+
+export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: (medicalRecordId: number) => void }) {
+  const [pacientes, setPacientes] = useState<PatientRow[]>([]);
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadDoctorPatients = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+
+        const [patientResponse, consultationResponse] = await Promise.all([
+          api.get('/api/patients', { params: { page: 0, size: 100, sortBy: 'id' } }),
+          api.get('/api/consultations', { params: { page: 0, size: 100, sort: 'consultationDate,desc' } }),
+        ]);
+
+        const patientRows = patientResponse.data?.content ?? [];
+        const medicalRecordIds = new Set(
+          (consultationResponse.data?.content ?? [])
+            .map((consultation: any) => consultation.medicalRecordId)
+            .filter((id: number | null) => id !== null && id !== undefined)
+        );
+
+        const assigned = patientRows.filter((patient: PatientRow) => {
+          const recordId = patient.medicalRecordId ?? null;
+          return recordId !== null && medicalRecordIds.has(recordId);
+        });
+
+        setPacientes(assigned);
+      } catch (err) {
+        setError('No se pudieron cargar los pacientes atendidos por este doctor.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDoctorPatients();
+  }, []);
+
+  const filteredPatients = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return pacientes;
+
+    return pacientes.filter((paciente) => {
+      const searchText = `${paciente.fullName} ${paciente.identityDocument} ${paciente.phone}`.toLowerCase();
+      return searchText.includes(normalized);
+    });
+  }, [pacientes, query]);
 
   return (
-    <div className="p-8 bg-[#F4F7F9] min-h-screen">
+    <div className="min-h-screen bg-[#F4F7F9] p-8">
       <div className="mb-8">
-        <h1 className="text-[#1E293B] text-3xl font-bold mb-2">Mis Pacientes</h1>
-        <p className="text-[#64748B]">Pacientes que he atendido - Vista de solo lectura</p>
+        <h1 className="mb-2 text-3xl font-bold text-[#1E293B]">Mis Pacientes</h1>
+        <p className="text-[#64748B]">Pacientes asociados a las consultas atendidas por el médico autenticado</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
-        <div className="p-6 border-b border-[#E2E8F0] flex items-center justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#64748B]" />
+      <div className="rounded-xl border border-[#CBD5E1] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center justify-between border-b border-[#E2E8F0] p-6">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
             <input
               type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar por nombre o documento..."
-              className="w-full pl-10 pr-4 py-3 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-md text-[#1E293B] focus:outline-none focus:border-[#2C7A7B]"
+              className="w-full rounded-md border-[1.5px] border-[#94A3B8] bg-[#F8FAFC] py-3 pl-10 pr-4 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none"
             />
           </div>
-
-          
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Identificación</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Nombre Completo</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Teléfono</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Fecha Nacimiento</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Última Consulta</th>
-                <th className="px-6 py-4 text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pacientesAsignados.map((paciente) => (
-                <tr key={paciente.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                  <td className="px-6 py-4 text-[#1E293B] text-sm font-medium">{paciente.id}</td>
-                  <td className="px-6 py-4 text-[#1E293B] text-sm">{paciente.nombre}</td>
-                  <td className="px-6 py-4 text-[#1E293B] text-sm">{paciente.telefono}</td>
-                  <td className="px-6 py-4 text-[#1E293B] text-sm">{paciente.fechaNacimiento}</td>
-                  <td className="px-6 py-4 text-[#64748B] text-sm">{paciente.ultimaConsulta}</td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={onVerHistorial}
-                      className="px-6 py-2 bg-[#2C7A7B] text-white text-sm font-semibold rounded-lg hover:bg-[#235E5F] transition-colors"
-                    >
-                      Ver Historial
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="p-6 bg-[#F8FAFC] border-t border-[#E2E8F0] rounded-b-xl">
-          <div className="flex items-center gap-2 text-sm text-[#64748B]">
-            <span>ℹ️</span>
-            <p>
-              Los médicos no tienen permisos para registrar nuevos pacientes en el sistema. Esta vista muestra únicamente los pacientes que ya ha atendido.
-            </p>
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-3 py-12 text-[#64748B]">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Cargando pacientes...</span>
           </div>
-        </div>
+        ) : error ? (
+          <div className="px-6 py-8 text-center text-red-600">{error}</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Identificación</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Nombre Completo</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Teléfono</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Fecha Nacimiento</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Expediente</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPatients.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-10 text-center text-[#64748B]">
+                        No hay pacientes para mostrar.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPatients.map((paciente) => (
+                      <tr key={paciente.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
+                        <td className="px-6 py-4 text-sm font-medium text-[#1E293B]">{paciente.identityDocument}</td>
+                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.fullName}</td>
+                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.phone}</td>
+                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.birthDate ? new Date(paciente.birthDate).toLocaleDateString('es-ES') : '—'}</td>
+                        <td className="px-6 py-4 text-sm text-[#64748B]">#{paciente.medicalRecordId ?? '—'}</td>
+                        <td className="px-6 py-4">
+                          <button
+                            type="button"
+                            onClick={() => paciente.medicalRecordId && onVerHistorial?.(paciente.medicalRecordId)}
+                            disabled={!paciente.medicalRecordId}
+                            className="rounded-lg bg-[#2C7A7B] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#235E5F] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Ver Historial
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

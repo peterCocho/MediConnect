@@ -1,214 +1,169 @@
+import { Loader2, Plus, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import api from '../../service/api';
+
+type Template = {
+  id: number;
+  name: string;
+  description: string;
+  templateContent: string;
+  isActive: boolean;
+};
+
 export function AdministracionPlantillasScreen() {
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: '', description: '', template: '' });
+
+  const loadTemplates = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/api/templates');
+      setTemplates(response.data ?? []);
+      setError('');
+    } catch (err) {
+      setError('No se pudieron cargar las plantillas del sistema.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedName = form.name.trim();
+    const trimmedTemplate = form.template.trim();
+
+    if (!trimmedName || !trimmedTemplate) {
+      setError('Nombre y contenido de la plantilla son obligatorios.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+      await api.post('/api/templates', {
+        name: trimmedName,
+        description: form.description.trim(),
+        template: trimmedTemplate,
+      });
+      setForm({ name: '', description: '', template: '' });
+      await loadTemplates();
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.mensaje || 'No se pudo crear la plantilla.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-[#F4F7F9] font-sans">
-      {/* Sidebar Lateral */}
-      <aside className="w-64 bg-white border-r border-[#CBD5E1] flex flex-col">
-        <div className="p-6 border-b border-[#E2E8F0]">
-          <h2 className="text-xl font-bold text-[#1E293B]">
-            MediConnect
-          </h2>
-          <p className="text-xs text-[#64748B]">
-            Panel de Administración
-          </p>
+    <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
+      <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="mb-2 text-2xl font-bold text-[#1E293B] sm:text-3xl">Plantillas Clínicas</h1>
+          <p className="text-sm text-[#64748B] sm:text-base">Gestione las estructuras base para notas médicas</p>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <a
-            href="#"
-            className="block px-4 py-3 text-sm font-medium text-[#64748B] rounded-lg hover:bg-[#F1F5F9]"
-          >
-            Dashboard
-          </a>
-          <a
-            href="#"
-            className="block px-4 py-3 text-sm font-medium text-[#64748B] rounded-lg hover:bg-[#F1F5F9]"
-          >
-            Gestión de Usuarios
-          </a>
-          <a
-            href="#"
-            className="block px-4 py-3 text-sm font-medium text-[#2C7A7B] bg-[#E6F2F2] rounded-lg border-l-4 border-[#2C7A7B]"
-          >
-            Plantillas Clínicas
-          </a>
-          <a
-            href="#"
-            className="block px-4 py-3 text-sm font-medium text-[#64748B] rounded-lg hover:bg-[#F1F5F9]"
-          >
-            Configuración
-          </a>
-        </nav>
-      </aside>
-
-      {/* Contenido Principal */}
-      <main className="flex-1 p-8 overflow-y-auto relative">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-[#1E293B] text-3xl font-bold mb-2">
-              Plantillas Clínicas
-            </h1>
-            <p className="text-[#64748B]">
-              Gestione las estructuras base para notas médicas
-              por especialidad.
-            </p>
-          </div>
-          <button className="px-6 py-3 bg-[#2C7A7B] text-white text-sm font-semibold rounded-lg hover:bg-[#235E5F] transition-colors shadow-sm">
-            + Nueva Plantilla
-          </button>
+        <div className="inline-flex items-center gap-2 rounded-lg bg-[#2C7A7B] px-4 py-3 font-semibold text-white">
+          <Plus className="h-4 w-4" />
+          Plantillas
         </div>
+      </div>
 
-        {/* Tabla CRUD */}
-        <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-[0_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <th className="px-6 py-4 text-sm font-semibold text-[#1E293B]">
-                  Nombre
-                </th>
-                <th className="px-6 py-4 text-sm font-semibold text-[#1E293B]">
-                  Descripción
-                </th>
-                <th className="px-6 py-4 text-sm font-semibold text-[#1E293B]">
-                  Estado
-                </th>
-                <th className="px-6 py-4 text-sm font-semibold text-[#1E293B]">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-[#1E293B]">
-                  Formato SOAP
-                </td>
-                <td className="px-6 py-4 text-sm text-[#64748B]">
-                  Estructura general Subjetivo, Objetivo,
-                  Análisis, Plan.
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 bg-[#DEF7EC] text-[#03543F] text-xs font-semibold rounded-full">
-                    Activo
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#2C7A7B] font-medium cursor-pointer hover:underline">
-                  Editar
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-[#1E293B]">
-                  Control Cardiología
-                </td>
-                <td className="px-6 py-4 text-sm text-[#64748B]">
-                  Seguimiento de hipertensión y riesgo
-                  cardiovascular.
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 bg-[#DEF7EC] text-[#03543F] text-xs font-semibold rounded-full">
-                    Activo
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#2C7A7B] font-medium cursor-pointer hover:underline">
-                  Editar
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-[#1E293B]">
-                  Nota de Ingreso (Obsoleta)
-                </td>
-                <td className="px-6 py-4 text-sm text-[#64748B]">
-                  Formato antiguo de ingreso general.
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 bg-[#FDE8E8] text-[#9B1C1C] text-xs font-semibold rounded-full">
-                    Inactivo
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#2C7A7B] font-medium cursor-pointer hover:underline">
-                  Editar
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-xl border border-[#CBD5E1] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-3 py-12 text-[#64748B]">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Cargando plantillas...</span>
+            </div>
+          ) : error ? (
+            <div className="px-6 py-8 text-center text-red-600">{error}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Nombre</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Descripción</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {templates.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-10 text-center text-[#64748B]">No hay plantillas registradas.</td>
+                    </tr>
+                  ) : (
+                    templates.map((template) => (
+                      <tr key={template.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
+                        <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{template.name}</td>
+                        <td className="px-4 py-4 text-sm text-[#64748B] sm:px-6">{template.description || 'Sin descripción'}</td>
+                        <td className="px-4 py-4 sm:px-6">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${template.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                            {template.isActive ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* Overlay del Modal de Creación (Simulado para Figma) */}
-        <div className="absolute inset-0 bg-[#0F172A] bg-opacity-40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl border border-[#CBD5E1] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E2E8F0] flex justify-between items-center bg-[#F8FAFC]">
-              <h3 className="text-lg font-bold text-[#1E293B]">
-                Crear Nueva Plantilla Clínica
-              </h3>
-              <button className="text-[#64748B] font-bold text-xl hover:text-[#1E293B]">
-                ×
-              </button>
+        <div className="rounded-xl border border-[#CBD5E1] bg-white p-5 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+          <h2 className="mb-4 text-xl font-bold text-[#1E293B]">Nueva plantilla</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#334155]">Nombre</label>
+              <input
+                value={form.name}
+                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                className="w-full rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none"
+                placeholder="Ej: SOAP General"
+              />
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#64748B] text-sm font-medium mb-2">
-                    Nombre de la Plantilla
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ej. Control Odontológico"
-                    className="w-full px-4 py-3 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-md text-[#1E293B] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#64748B] text-sm font-medium mb-2">
-                    Estado Inicial
-                  </label>
-                  <select className="w-full px-4 py-3 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-md text-[#1E293B] focus:outline-none">
-                    <option>Activo</option>
-                    <option>Inactivo</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[#64748B] text-sm font-medium mb-2">
-                  Descripción (Propósito)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Breve descripción del caso de uso para esta plantilla..."
-                  className="w-full px-4 py-3 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-md text-[#1E293B] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-2">
-                  <label className="block text-[#64748B] text-sm font-medium">
-                    Estructura Base (Texto Plano)
-                  </label>
-                  <span className="text-xs text-[#94A3B8]">
-                    Soporta saltos de línea (\n)
-                  </span>
-                </div>
-                <textarea
-                  rows={6}
-                  className="w-full px-4 py-3 bg-[#F8FAFC] border-[1.5px] border-[#94A3B8] rounded-md text-[#1E293B] focus:outline-none resize-none font-mono text-sm"
-                  placeholder="Escriba aquí la estructura. Ej:&#10;Motivo:&#10;Examen físico:&#10;Conducta:"
-                />
-                <p className="text-xs text-[#EF4444] mt-2 font-medium">
-                  Atención: El sistema no soporta etiquetas HTML
-                  por directrices de seguridad e integridad del
-                  MVP.
-                </p>
-              </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#334155]">Descripción</label>
+              <input
+                value={form.description}
+                onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+                className="w-full rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none"
+                placeholder="Breve descripción"
+              />
             </div>
 
-            <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex justify-end gap-3">
-              <button className="px-6 py-2 bg-white border border-[#CBD5E1] text-[#475569] font-medium rounded-lg hover:bg-[#F1F5F9] transition-colors">
-                Cancelar
-              </button>
-              <button className="px-6 py-2 bg-[#2C7A7B] text-white font-medium rounded-lg hover:bg-[#235E5F] transition-colors shadow-sm">
-                Guardar Plantilla
-              </button>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#334155]">Contenido</label>
+              <textarea
+                value={form.template}
+                onChange={(event) => setForm((current) => ({ ...current, template: event.target.value }))}
+                rows={7}
+                className="w-full resize-none rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none"
+                placeholder="Motivo:&#10;Examen físico:&#10;Plan:"
+              />
             </div>
-          </div>
+
+            {error ? <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div> : null}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2C7A7B] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#235E5F] disabled:opacity-70"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isSubmitting ? 'Guardando...' : 'Guardar plantilla'}
+            </button>
+          </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
