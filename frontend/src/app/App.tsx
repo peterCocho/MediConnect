@@ -1,10 +1,13 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router';
+import { Menu } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginScreen } from './screens/LoginScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
+import { DoctorDashboard } from './screens/DoctorDashboard';
+import { ReceptionistDashboard } from './screens/ReceptionistDashboard';
 import { PacientesScreen } from './screens/PacientesScreen';
 import { UsuariosScreen } from './screens/UsuariosScreen';
 import { RecepcionistasScreen } from './screens/RecepcionistasScreen';
@@ -18,19 +21,49 @@ import { AgendaGlobalScreen } from './screens/AgendaGlobalScreen';
 import { MiAgendaScreen } from './screens/MiAgendaScreen';
 import { MisPacientesScreen } from './screens/MisPacientesScreen';
 import { AdministracionPlantillasScreen } from './screens/AdministracionPlantillasScreen';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { UserRole } from './types/user';
 
 function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
   if (!user) return null;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F4F7F9] md:flex-row">
-      <Sidebar activeScreen={location.pathname.slice(1) || 'dashboard'} onNavigate={(screen) => navigate(`/${screen}`)} userRole={user.role} />
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <button
+        type="button"
+        aria-label="Abrir menú"
+        onClick={() => setIsOpen(true)}
+        className="fixed left-4 top-4 z-50 inline-flex items-center justify-center rounded-lg border border-[#CBD5E1] bg-white p-2 text-[#1E293B] shadow-sm md:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      <div
+        className={`fixed inset-0 z-40 bg-slate-900/30 transition-opacity md:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      <Sidebar
+        activeScreen={location.pathname.slice(1) || 'dashboard'}
+        onNavigate={(screen) => {
+          navigate(`/${screen}`);
+          setIsOpen(false);
+        }}
+        userRole={user.role}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:ml-0">
         <Header user={user} onLogout={logout} />
         <main className="flex-1 overflow-auto"><Outlet /></main>
       </div>
@@ -43,11 +76,25 @@ function RoleRoute({ roles, children }: { roles: UserRole[]; children: ReactNode
   return user && roles.includes(user.role) ? <>{children}</> : <Navigate to="/dashboard" replace />;
 }
 
+function DashboardRoute() {
+  const { user } = useAuth();
+
+  if (user?.role === 'DOCTOR') {
+    return <DoctorDashboard />;
+  }
+
+  if (user?.role === 'RECEPTIONIST') {
+    return <ReceptionistDashboard />;
+  }
+
+  return <DashboardScreen />;
+}
+
 function PatientsRoute() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (user?.role === 'RECEPTIONIST') return <RegistroPacienteScreen />;
+  if (user?.role === 'RECEPTIONIST') return <PacientesScreen />;
   if (user?.role === 'DOCTOR') {
     return <MisPacientesScreen onVerHistorial={(medicalRecordId) => navigate(`/historial?medicalRecordId=${medicalRecordId}`)} />;
   }
@@ -65,7 +112,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginScreen />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<DashboardScreen />} />
+          <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/pacientes" element={<PatientsRoute />} />
           <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsuariosScreen /></RoleRoute>} />
           <Route path="/recepcionistas" element={<RoleRoute roles={['ADMIN']}><RecepcionistasScreen /></RoleRoute>} />

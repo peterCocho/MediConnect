@@ -144,6 +144,7 @@ public class UserServiceImpl implements UserService {
                 .phone(doctor.getPhone())
                 .specialty(doctor.getSpecialty())
                 .username(doctor.getUser().getUsername())
+                .isActive(doctor.getUser().getIsActive())
                 .build();
     }
 

@@ -44,7 +44,7 @@ public class UserController {
     }
 
     @GetMapping("/doctors/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RECEPTION')")
     public ResponseEntity<DoctorResponse> getDoctorById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getDoctorById(id));
     }
@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @GetMapping("/doctors")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RECEPTION')")
     public ResponseEntity<Page<DoctorResponse>> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

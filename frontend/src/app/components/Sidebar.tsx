@@ -37,12 +37,12 @@ const MediConnectBrandIcon = ({ className = "w-5 h-5 text-[#455A73]" }) => (
   </svg>
 );
 
-
-
 interface SidebarProps {
   activeScreen: string;
   onNavigate: (screen: string) => void;
   userRole: UserRole;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 interface MenuItem {
@@ -121,7 +121,7 @@ const allMenuItems: MenuItem[] = [
   // Recepcionista específico
   {
     id: "pacientes",
-    label: "Registrar Paciente",
+    label: "Pacientes",
     icon: Users,
     roles: ["RECEPTIONIST"],
   },
@@ -143,13 +143,15 @@ export function Sidebar({
   activeScreen,
   onNavigate,
   userRole,
+  isOpen = false,
+  onClose,
 }: SidebarProps) {
   const menuItems = allMenuItems.filter((item) =>
     item.roles.includes(userRole),
   );
 
   return (
-    <aside className="w-full bg-[#455A73] text-white md:w-64 md:min-h-screen md:flex md:flex-col">
+    <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-[#455A73] text-white md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
       <div className="border-b border-[#334155] p-4 md:p-6">
         <div className="flex items-center justify-center gap-2 md:justify-start">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8CD6D1]">
@@ -159,7 +161,7 @@ export function Sidebar({
         </div>
       </div>
 
-      <nav className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:overflow-y-auto md:px-4 md:py-4">
+      <nav className="flex-1 flex flex-col gap-2 overflow-y-auto px-3 py-3 md:px-4 md:py-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreen === item.id;
@@ -167,8 +169,11 @@ export function Sidebar({
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`flex min-w-max items-center gap-2 rounded-lg px-3 py-2 text-left transition-all md:w-full md:gap-3 md:px-4 md:py-3 ${
+              onClick={() => {
+                onNavigate(item.id);
+                if (onClose) onClose();
+              }}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-all md:gap-3 md:px-4 md:py-3 ${
                 isActive
                   ? "border-l-0 bg-[#334155] font-semibold text-white md:border-l-4 md:border-[#8CD6D1]"
                   : "text-[#CBD5E1] hover:bg-[#334155] hover:text-white"
