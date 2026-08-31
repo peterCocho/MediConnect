@@ -173,7 +173,7 @@ export function UsuariosScreen() {
             {success && <div className="border-b border-[#E2E8F0] bg-emerald-50 px-6 py-3 text-sm text-emerald-700">{success}</div>}
             <div className="overflow-x-auto">
               <table className="min-w-[860px] w-full">
-                <thead>
+                <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Nombre</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Documento</th>
@@ -191,14 +191,23 @@ export function UsuariosScreen() {
                     </tr>
                   ) : (
                     usuarios.map((usuario) => {
-                      const isActive = usuario.isActive ?? usuario.active ?? true;
+                      const isActive = usuario.active ?? usuario.isActive ?? false;
+
                       return (
-                        <tr key={usuario.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                          <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{usuario.fullName}</td>
-                          <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{usuario.documentNumber}</td>
-                          <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{usuario.username}</td>
-                          <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{usuario.specialty || 'Sin especialidad'}</td>
-                          <td className="px-4 py-4 sm:px-6">
+                        <tr key={usuario.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Nombre">
+                            {usuario.fullName}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Documento">
+                            {usuario.documentNumber}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Usuario">
+                            {usuario.username}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Especialidad">
+                            {usuario.specialty || 'Sin especialidad'}
+                          </td>
+                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
                             <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
                               {isActive ? 'Activo' : 'Inactivo'}
                             </span>

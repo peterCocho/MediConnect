@@ -23,24 +23,29 @@ export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: (medic
         setIsLoading(true);
         setError('');
 
-        const [patientResponse, consultationResponse] = await Promise.all([
-          api.get('/api/patients', { params: { page: 0, size: 100, sortBy: 'id' } }),
-          api.get('/api/consultations', { params: { page: 0, size: 100, sort: 'consultationDate,desc' } }),
-        ]);
-
-        const patientRows = patientResponse.data?.content ?? [];
-        const medicalRecordIds = new Set(
-          (consultationResponse.data?.content ?? [])
-            .map((consultation: any) => consultation.medicalRecordId)
-            .filter((id: number | null) => id !== null && id !== undefined)
-        );
-
-        const assigned = patientRows.filter((patient: PatientRow) => {
-          const recordId = patient.medicalRecordId ?? null;
-          return recordId !== null && medicalRecordIds.has(recordId);
+        const consultationResponse = await api.get('/api/consultations', {
+          params: { page: 0, size: 100, sort: 'consultationDate,desc' },
         });
 
-        setPacientes(assigned);
+        const uniquePatients = new Map<number, PatientRow>();
+
+        (consultationResponse.data?.content ?? []).forEach((consultation: any) => {
+          const recordId = consultation?.medicalRecordId;
+          if (recordId == null) return;
+
+          const compiled = {
+            id: recordId,
+            identityDocument: `Expediente #${recordId}`,
+            fullName: `Paciente expediente ${recordId}`,
+            phone: '—',
+            birthDate: null,
+            medicalRecordId: recordId,
+          } satisfies PatientRow;
+
+          uniquePatients.set(recordId, compiled);
+        });
+
+        setPacientes(Array.from(uniquePatients.values()));
       } catch (err) {
         setError('No se pudieron cargar los pacientes atendidos por este doctor.');
       } finally {
@@ -93,7 +98,7 @@ export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: (medic
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
+                <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Identificación</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Nombre Completo</th>
@@ -112,13 +117,13 @@ export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: (medic
                     </tr>
                   ) : (
                     filteredPatients.map((paciente) => (
-                      <tr key={paciente.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                        <td className="px-6 py-4 text-sm font-medium text-[#1E293B]">{paciente.identityDocument}</td>
-                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.fullName}</td>
-                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.phone}</td>
-                        <td className="px-6 py-4 text-sm text-[#1E293B]">{paciente.birthDate ? new Date(paciente.birthDate).toLocaleDateString('es-ES') : '—'}</td>
-                        <td className="px-6 py-4 text-sm text-[#64748B]">#{paciente.medicalRecordId ?? '—'}</td>
-                        <td className="px-6 py-4">
+                      <tr key={paciente.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Identificación">{paciente.identityDocument}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Nombre Completo">{paciente.fullName}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Teléfono">{paciente.phone}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha Nacimiento">{paciente.birthDate ? new Date(paciente.birthDate).toLocaleDateString('es-ES') : '—'}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">#{paciente.medicalRecordId ?? '—'}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Acción">
                           <button
                             type="button"
                             onClick={() => paciente.medicalRecordId && onVerHistorial?.(paciente.medicalRecordId)}

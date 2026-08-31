@@ -98,7 +98,7 @@ export function NotificacionesScreen() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Teléfono</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Mensaje</th>
@@ -108,11 +108,11 @@ export function NotificacionesScreen() {
               </thead>
               <tbody>
                 {messages.map((message) => (
-                  <tr key={message.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                    <td className="px-6 py-4 text-sm text-[#1E293B]">{message.phoneNumber}</td>
-                    <td className="px-6 py-4 text-sm text-[#64748B]">{message.messageBody}</td>
-                    <td className="px-6 py-4 text-sm text-[#1E293B]">{new Date(message.receivedAt).toLocaleString('es-ES')}</td>
-                    <td className="px-6 py-4">
+                  <tr key={message.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Teléfono">{message.phoneNumber}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Mensaje">{message.messageBody}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha/Hora">{new Date(message.receivedAt).toLocaleString('es-ES')}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Acción">
                       <button type="button" onClick={() => markAsRead(message.id)} className="rounded bg-[#2C7A7B] px-4 py-2 text-sm text-white hover:bg-[#235E5F]">
                         Marcar como leída
                       </button>

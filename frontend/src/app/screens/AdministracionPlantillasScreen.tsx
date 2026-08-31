@@ -86,7 +86,7 @@ export function AdministracionPlantillasScreen() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead>
+                <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Nombre</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Descripción</th>
@@ -100,10 +100,10 @@ export function AdministracionPlantillasScreen() {
                     </tr>
                   ) : (
                     templates.map((template) => (
-                      <tr key={template.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                        <td className="px-4 py-4 text-sm text-[#1E293B] sm:px-6">{template.name}</td>
-                        <td className="px-4 py-4 text-sm text-[#64748B] sm:px-6">{template.description || 'Sin descripción'}</td>
-                        <td className="px-4 py-4 sm:px-6">
+                      <tr key={template.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Nombre">{template.name}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Descripción">{template.description || 'Sin descripción'}</td>
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
                           <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${template.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
                             {template.isActive ? 'Activo' : 'Inactivo'}
                           </span>

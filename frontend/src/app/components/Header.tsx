@@ -14,7 +14,7 @@ const roleLabels = {
 
 export function Header({ user, onLogout }: HeaderProps) {
   return (
-    <header className="border-b border-[#E2E8F0] bg-white px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
+    <header className="relative z-40 border-b border-[#E2E8F0] bg-white px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="w-full lg:flex-1">
           <input

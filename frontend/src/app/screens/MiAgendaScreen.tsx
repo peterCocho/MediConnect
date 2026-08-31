@@ -97,7 +97,7 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Hora</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B]">Expediente</th>
@@ -108,17 +108,17 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
               </thead>
               <tbody>
                 {agenda.map((consulta) => (
-                  <tr key={consulta.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                    <td className="px-6 py-4 text-sm font-semibold text-[#1E293B]">{formatHour(consulta.consultationDate)}</td>
-                    <td className="px-6 py-4 text-sm text-[#1E293B]">#{consulta.medicalRecordId ?? '—'}</td>
-                    <td className="px-6 py-4 text-sm text-[#64748B]">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</td>
-                    <td className="px-6 py-4">
+                  <tr key={consulta.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-semibold text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">{formatHour(consulta.consultationDate)}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">#{consulta.medicalRecordId ?? '—'}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#64748B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">{new Date(consulta.consultationDate).toLocaleDateString('es-ES')}</td>
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
                       <span className="inline-flex items-center gap-2 text-sm text-[#10B981]">
                         <span className="h-2 w-2 rounded-full bg-[#10B981]" />
                         {consulta.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Acción">
                       <button
                         type="button"
                         onClick={() => onIniciarConsulta?.(consulta.id)}

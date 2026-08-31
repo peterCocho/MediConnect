@@ -29,8 +29,9 @@ export function ReportesScreen() {
     loadReport();
   }, []);
 
-  const maxOccurrences = metrics?.topDiagnoses?.length
-    ? Math.max(...metrics.topDiagnoses.map((item) => item.occurrences))
+  // Validación para evitar división por cero si no hay consultas
+  const totalConsultations = metrics?.totalCompletedConsultations && metrics.totalCompletedConsultations > 0 
+    ? metrics.totalCompletedConsultations 
     : 1;
 
   return (
@@ -81,14 +82,13 @@ export function ReportesScreen() {
                 <div key={item.icd10Code} className="flex items-center gap-4">
                   <div className="w-24 text-sm font-medium text-[#64748B]">{item.icd10Code}</div>
                   <div className="flex-1">
-                    <div className="mb-1 flex items-center justify-between">
-                      <span className="text-sm text-[#1E293B]">Diagnóstico</span>
-                      <span className="text-sm font-semibold text-[#64748B]">{item.occurrences}</span>
+                    <div className="mb-1 flex items-center justify-end">
+                      <span className="text-sm font-semibold text-[#64748B]">{item.occurrences} {item.occurrences === 1 ? 'caso' : 'casos'}</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-[#F1F5F9]">
                       <div
-                        className="h-full bg-[#2C7A7B]"
-                        style={{ width: `${(item.occurrences / maxOccurrences) * 100}%` }}
+                        className="h-full bg-[#2C7A7B] transition-all duration-500 ease-in-out"
+                        style={{ width: `${(item.occurrences / totalConsultations) * 100}%` }}
                       />
                     </div>
                   </div>
