@@ -1,4 +1,6 @@
 import { Bell, Mail, ChevronDown, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { User } from '../types/user';
 
 interface HeaderProps {
@@ -12,19 +14,63 @@ const roleLabels = {
   RECEPTIONIST: 'Recepcionista',
 };
 
+const globalSearchRoutes = [
+  { path: '/dashboard', keywords: ['panel', 'inicio', 'dashboard', 'resumen', 'control'] },
+  { path: '/pacientes', keywords: ['pacientes', 'paciente'] },
+  { path: '/usuarios', keywords: ['usuarios', 'medicos', 'médicos', 'personal', 'usuarios del sistema'] },
+  { path: '/recepcionistas', keywords: ['recepcionistas', 'recepcionista'] },
+  { path: '/plantillas', keywords: ['plantillas', 'clinicas', 'clínicas', 'template'] },
+  { path: '/citas-global', keywords: ['citas global', 'agenda global', 'citas', 'agenda'] },
+  { path: '/reportes', keywords: ['reportes', 'reporte', 'estadisticas', 'analytics'] },
+  { path: '/agendamiento', keywords: ['agendamiento', 'gestión de citas', 'cita'] },
+  { path: '/notificaciones', keywords: ['notificaciones', 'whatsapp', 'mensaje'] },
+  { path: '/mi-agenda', keywords: ['mi agenda', 'agenda', 'turnos'] },
+  { path: '/historial', keywords: ['historial', 'historial clínico', 'consulta'] },
+  { path: '/consulta', keywords: ['consulta', 'nueva consulta'] },
+];
+
 export function Header({ user, onLogout }: HeaderProps) {
+  const navigate = useNavigate();
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleGlobalSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const value = searchValue.trim().toLowerCase();
+
+    if (!value) {
+      return;
+    }
+
+    const match = globalSearchRoutes.find(({ keywords }) =>
+      keywords.some((keyword) => value.includes(keyword.toLowerCase())),
+    );
+
+    if (match) {
+      navigate(match.path);
+      setSearchValue('');
+      return;
+    }
+
+    navigate('/dashboard');
+    setSearchValue('');
+  };
+
   return (
-    <header className="relative z-40 border-b border-[#E2E8F0] bg-white px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="w-full lg:flex-1">
+    // Replaced vertical padding with fixed heights and flex centering
+    <header className="relative z-40 flex h-16 w-full items-center border-b border-[#E2E8F0] bg-white px-4 sm:px-6 lg:h-[72px] lg:px-8">
+      <div className="flex w-full items-center gap-3 pl-12 lg:pl-0 lg:justify-between">
+        <form onSubmit={handleGlobalSearch} className="w-full min-w-0 lg:flex-1">
           <input
             type="text"
-            placeholder="Búsqueda global..."
-            className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-sm text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none lg:w-96"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+            placeholder="Buscar módulo..."
+            aria-label="Buscar módulo"
+            className="mt-2 h-10 w-full min-w-0 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-4 text-sm text-[#1E293B] transition focus:border-[#2C7A7B] focus:outline-none"
           />
-        </div>
+        </form>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
+        <div className="hidden items-center gap-3 lg:flex lg:justify-end">
           <div className="flex items-center gap-2">
             <button className="relative rounded-lg p-2 transition-colors hover:bg-[#F8FAFC]">
               <Bell className="h-5 w-5 text-[#64748B]" />
@@ -50,13 +96,13 @@ export function Header({ user, onLogout }: HeaderProps) {
               <span className="text-xs text-[#64748B]">{roleLabels[user.role]}</span>
             </div>
 
-            <button className="rounded transition-colors hover:bg-[#F8FAFC] group">
+            <button className="group rounded transition-colors hover:bg-[#F8FAFC]">
               <ChevronDown className="h-4 w-4 text-[#64748B] group-hover:text-[#1E293B]" />
             </button>
 
             <button
               onClick={onLogout}
-              className="rounded-lg p-2 transition-colors hover:bg-[#FEE2E2] group"
+              className="group rounded-lg p-2 transition-colors hover:bg-[#FEE2E2]"
               title="Cerrar sesión"
             >
               <LogOut className="h-5 w-5 text-[#64748B] group-hover:text-[#EF4444]" />

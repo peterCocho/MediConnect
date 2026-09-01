@@ -42,6 +42,7 @@ export function UsuariosScreen() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<DoctorForm>(emptyDoctorForm);
   const [submitting, setSubmitting] = useState(false);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -89,6 +90,29 @@ export function UsuariosScreen() {
       setError(message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = async (usuario: DoctorRow) => {
+    const nextStatus = !(usuario.active ?? usuario.isActive ?? false);
+
+    try {
+      setStatusUpdatingId(usuario.id);
+      setError('');
+      await api.put(`/api/users/doctors/${usuario.id}`, {
+        fullName: usuario.fullName,
+        email: usuario.email,
+        phone: usuario.phone,
+        specialty: usuario.specialty,
+        isActive: nextStatus,
+      });
+      setSuccess(nextStatus ? 'El médico fue activado correctamente.' : 'El médico fue inactivado correctamente.');
+      await fetchUsers(page);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'No se pudo actualizar el estado del médico.';
+      setError(message);
+    } finally {
+      setStatusUpdatingId(null);
     }
   };
 
@@ -172,7 +196,7 @@ export function UsuariosScreen() {
           <>
             {success && <div className="border-b border-[#E2E8F0] bg-emerald-50 px-6 py-3 text-sm text-emerald-700">{success}</div>}
             <div className="overflow-x-auto">
-              <table className="min-w-[860px] w-full">
+              <table className="w-full min-w-0">
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Nombre</th>
@@ -208,9 +232,23 @@ export function UsuariosScreen() {
                             {usuario.specialty || 'Sin especialidad'}
                           </td>
                           <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
-                            <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
-                              {isActive ? 'Activo' : 'Inactivo'}
-                            </span>
+                            <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:justify-start">
+                              <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                                {isActive ? 'Activo' : 'Inactivo'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleStatus(usuario)}
+                                disabled={statusUpdatingId === usuario.id}
+                                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                                  isActive
+                                    ? 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                                    : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                } disabled:cursor-not-allowed disabled:opacity-60`}
+                              >
+                                {statusUpdatingId === usuario.id ? 'Guardando...' : isActive ? 'Inactivar' : 'Activar'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

@@ -77,7 +77,7 @@ export function ReceptionistDashboard() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-600">{error}</div>
       ) : (
         <>
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
+          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
@@ -118,7 +118,7 @@ export function ReceptionistDashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px]">
+              <table className="w-full min-w-0">
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Hora</th>

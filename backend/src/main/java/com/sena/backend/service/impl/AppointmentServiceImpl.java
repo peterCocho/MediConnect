@@ -190,8 +190,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public Page<Appointment> getAllAppointments(OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable) {
-        OffsetDateTime start = (startDate != null) ? startDate : OffsetDateTime.now();
-        OffsetDateTime end = (endDate != null) ? endDate : start.plusYears(1);
+        if (startDate == null && endDate == null) {
+            return appointmentRepository.findAll(pageable);
+        }
+
+        OffsetDateTime start = (startDate != null) ? startDate : OffsetDateTime.MIN;
+        OffsetDateTime end = (endDate != null) ? endDate : OffsetDateTime.MAX;
 
         if (start.isAfter(end)) {
             throw new BusinessRuleException("La fecha de inicio no puede ser posterior a la fecha de finalización.");

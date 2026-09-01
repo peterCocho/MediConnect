@@ -61,7 +61,7 @@ export function AgendaGlobalScreen() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-600">{error}</div>
       ) : (
         <>
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
+          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
@@ -102,9 +102,10 @@ export function AgendaGlobalScreen() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px]">
+              <table className="w-full min-w-0 md:min-w-[760px]">
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Fecha</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Hora</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Paciente</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Médico</th>
@@ -119,10 +120,14 @@ export function AgendaGlobalScreen() {
 
                     return (
                       <tr key={cita.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+                        <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">
+                          <span>{fechaTexto}</span>
+                        </td>
                         <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">
                           <span>{hora}</span>
-                          <span className="text-xs text-[#64748B] md:hidden">{fechaTexto}</span>
+                          
                         </td>
+                        
                         <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Paciente">
                           Paciente ID: {cita.patientId}
                         </td>

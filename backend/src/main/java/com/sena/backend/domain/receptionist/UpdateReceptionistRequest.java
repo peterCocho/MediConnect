@@ -17,4 +17,5 @@ public class UpdateReceptionistRequest {
     private String phone;
     @NotBlank
     private String identityDocument;
+    private Boolean isActive;
 }

@@ -92,6 +92,9 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         receptionist.setFullName(req.getFullName());
         receptionist.setPhone(req.getPhone());
         receptionist.setIdentityDocument(req.getIdentityDocument());
+        if (req.getIsActive() != null) {
+            receptionist.getUser().setActive(req.getIsActive());
+        }
 
         receptionistRepository.save(receptionist);
     }

@@ -298,7 +298,7 @@ export function PacientesScreen() {
           <>
             {success && <div className="border-b border-[#E2E8F0] bg-emerald-50 px-6 py-3 text-sm text-emerald-700">{success}</div>}
             <div className="overflow-x-auto">
-              <table className="min-w-[980px] w-full">
+              <table className="w-full min-w-0">
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Identificación</th>

@@ -37,18 +37,18 @@ function Layout() {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F7F9] md:flex-row">
+    <div className="flex min-h-screen flex-col bg-[#F4F7F9] lg:flex-row">
       <button
         type="button"
         aria-label="Abrir menú"
         onClick={() => setIsOpen(true)}
-        className="fixed left-4 top-4 z-50 inline-flex items-center justify-center rounded-lg border border-[#CBD5E1] bg-white p-2 text-[#1E293B] shadow-sm md:hidden"
+        className="fixed left-4 top-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] shadow-sm lg:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
 
       <div
-        className={`fixed inset-0 z-40 bg-slate-900/30 transition-opacity md:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-slate-900/30 transition-opacity lg:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={() => setIsOpen(false)}
       />
 

@@ -151,7 +151,7 @@ export function Sidebar({
   );
 
   return (
-    <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-[#455A73] text-white md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+    <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-[#455A73] text-white flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${isOpen ? 'lg:translate-x-0' : ''}`}>
       <div className="border-b border-[#334155] p-4 md:p-6">
         <div className="flex items-center justify-center gap-2 md:justify-start">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8CD6D1]">

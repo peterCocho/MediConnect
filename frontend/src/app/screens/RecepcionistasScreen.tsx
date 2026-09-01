@@ -36,6 +36,7 @@ export function RecepcionistasScreen() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ReceptionistForm>(emptyReceptionistForm);
   const [submitting, setSubmitting] = useState(false);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -82,6 +83,28 @@ export function RecepcionistasScreen() {
       setError(message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = async (recepcionista: Receptionist) => {
+    const nextStatus = !(recepcionista.active ?? recepcionista.isActive ?? false);
+
+    try {
+      setStatusUpdatingId(recepcionista.id);
+      setError('');
+      await api.put(`/api/receptionists/${recepcionista.id}`, {
+        fullName: recepcionista.fullName,
+        phone: recepcionista.phone,
+        identityDocument: recepcionista.identityDocument,
+        isActive: nextStatus,
+      });
+      setSuccess(nextStatus ? 'El recepcionista fue activado correctamente.' : 'El recepcionista fue inactivado correctamente.');
+      await loadReceptionists(page);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'No se pudo actualizar el estado del recepcionista.';
+      setError(message);
+    } finally {
+      setStatusUpdatingId(null);
     }
   };
 
@@ -157,7 +180,7 @@ export function RecepcionistasScreen() {
           <>
             {success && <div className="border-b border-[#E2E8F0] bg-emerald-50 px-6 py-3 text-sm text-emerald-700">{success}</div>}
             <div className="overflow-x-auto">
-              <table className="min-w-[760px] w-full">
+              <table className="w-full min-w-0">
                 <thead className="hidden md:table-header-group">
                   <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#64748B] sm:px-6">Nombre</th>
@@ -191,10 +214,24 @@ export function RecepcionistasScreen() {
                             {recepcionista.phone}
                           </td>
                           <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
-                            <span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
-                              <UserCheck className="h-3.5 w-3.5" />
-                              {isActive ? 'Activo' : 'Inactivo'}
-                            </span>
+                            <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:justify-start">
+                              <span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                                <UserCheck className="h-3.5 w-3.5" />
+                                {isActive ? 'Activo' : 'Inactivo'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleStatus(recepcionista)}
+                                disabled={statusUpdatingId === recepcionista.id}
+                                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                                  isActive
+                                    ? 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                                    : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                } disabled:cursor-not-allowed disabled:opacity-60`}
+                              >
+                                {statusUpdatingId === recepcionista.id ? 'Guardando...' : isActive ? 'Inactivar' : 'Activar'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
