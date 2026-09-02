@@ -28,22 +28,20 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
 
     List<Consultation> findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(Long medicalRecordId, AppointmentStatus status);
 
-    // Count volume of consultations within a date range
+        // Count all consultations with a completed clinical record
+        long countByStatus(AppointmentStatus status);
+
+        // Count volume of consultations within a date range
     long countByStatusAndConsultationDateBetween(AppointmentStatus status, OffsetDateTime startDate, OffsetDateTime endDate);
 
     // Analytical grouping query for ICD-10 prevalence excluding null or empty codes
     @Query("SELECT c.icd10Code AS icd10Code, COUNT(c) AS count " +
             "FROM Consultation c " +
             "WHERE c.status = :status " +
-            "AND c.consultationDate >= :startDate " +
-            "AND c.consultationDate <= :endDate " +
             "AND c.icd10Code IS NOT NULL " +
             "AND TRIM(c.icd10Code) != '' " +
             "GROUP BY c.icd10Code " +
             "ORDER BY count DESC")
-    List<DiagnosisCountProjection> findTopDiagnosesByDateRange(
-            @Param("status") AppointmentStatus status,
-            @Param("startDate") OffsetDateTime startDate,
-            @Param("endDate") OffsetDateTime endDate,
-            Pageable pageable);
+    List<DiagnosisCountProjection> findTopDiagnosesByStatus(
+            @Param("status") AppointmentStatus status, Pageable pageable);
 }

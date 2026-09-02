@@ -56,7 +56,7 @@ export function ReportesScreen() {
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <BarChart3 className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Este mes</span>
+                <span className="text-sm text-[#64748B]">Histórico</span>
               </div>
               <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics?.totalCompletedConsultations ?? 0}</h3>
               <p className="text-sm text-[#64748B]">Total de Consultas</p>

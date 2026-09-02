@@ -120,7 +120,7 @@ export function UsuariosScreen() {
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
       <div className="mb-6 flex flex-col gap-3 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="mb-2 text-2xl font-bold text-[#1E293B] sm:text-3xl">Gestión de Usuarios</h1>
+          <h1 className="mb-2 text-2xl font-bold text-[#1E293B] sm:text-3xl">Doctores</h1>
           <p className="text-sm text-[#64748B] sm:text-base">Administre el personal y permisos del sistema</p>
         </div>
         <button
@@ -129,7 +129,7 @@ export function UsuariosScreen() {
           className="flex items-center justify-center gap-2 rounded-lg bg-[#2C7A7B] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#235E5F] sm:px-6"
         >
           <Plus className="h-5 w-5" />
-          <span>{showForm ? 'Cerrar' : 'Nuevo Usuario'}</span>
+          <span>{showForm ? 'Cerrar' : 'Nuevo Doctor'}</span>
         </button>
       </div>
 

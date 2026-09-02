@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,21 +22,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional(readOnly = true)
     public DashboardReportResponseDTO getCurrentMonthDashboard() {
-        OffsetDateTime now = OffsetDateTime.now();
+        // Reports must retain completed diagnoses across months; a month-only filter made
+        // the dashboard appear empty whenever the current month had no completed consultations.
+        long totalConsultations = consultationRepository.countByStatus(AppointmentStatus.COMPLETED);
 
-        // Calculate boundaries for the current month
-        OffsetDateTime startOfMonth = now.withDayOfMonth(1)
-                .withHour(0).withMinute(0).withSecond(0).withNano(0);
-        OffsetDateTime endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
-                .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
-
-        // Execute count metric
-        long totalConsultations = consultationRepository.countByStatusAndConsultationDateBetween(
-                AppointmentStatus.COMPLETED, startOfMonth, endOfMonth);
-
-        // Execute grouping metric (limit to top 5)
-        List<DiagnosisCountProjection> projections = consultationRepository.findTopDiagnosesByDateRange(
-                AppointmentStatus.COMPLETED, startOfMonth, endOfMonth, PageRequest.of(0, 5));
+        List<DiagnosisCountProjection> projections = consultationRepository.findTopDiagnosesByStatus(
+                AppointmentStatus.COMPLETED, PageRequest.of(0, 5));
 
         // Map projections to DTO
         List<DashboardReportResponseDTO.DiagnosisDetail> topDiagnoses = projections.stream()

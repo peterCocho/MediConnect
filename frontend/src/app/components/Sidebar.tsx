@@ -10,6 +10,7 @@ import {
   Stethoscope,
   LayoutTemplate,
 } from "lucide-react";
+import { Icon } from '@iconify/react';
 import { UserRole } from "../types/user";
 
 // Custom geometric abstract logo component
@@ -35,6 +36,18 @@ const MediConnectBrandIcon = ({ className = "w-5 h-5 text-[#455A73]" }) => (
       strokeLinecap="round"
     />
   </svg>
+);
+
+// --- ICONOS CORREGIDOS CON ICONIFY ---
+// Usamos 'mdi:doctor' para el doctor
+const DoctorIcon = ({ className }: { className?: string }) => (
+  <Icon icon="mdi:doctor" className={className} />
+);
+
+// Usamos 'mdi:headset' para la recepcionista (es el estándar más fiable)
+// Alternativa si prefieres: 'mdi:account-tie' o 'mdi:counter'
+const ReceptionistIcon = ({ className }: { className?: string }) => (
+  <Icon icon="mdi:headset" className={className} />
 );
 
 interface SidebarProps {
@@ -63,14 +76,14 @@ const allMenuItems: MenuItem[] = [
   // Admin específico
   {
     id: "usuarios",
-    label: "Gestión de Usuarios",
-    icon: UserCog,
+    label: "Doctores",
+    icon: DoctorIcon, // Icono de Doctor
     roles: ["ADMIN"],
   },
   {
     id: "recepcionistas",
     label: "Recepcionistas",
-    icon: UserCog,
+    icon: ReceptionistIcon, // Icono de Recepcionista (Corregido)
     roles: ["ADMIN"],
   },
   {
@@ -163,7 +176,7 @@ export function Sidebar({
 
       <nav className="flex-1 flex flex-col gap-2 overflow-y-auto px-3 py-3 md:px-4 md:py-4">
         {menuItems.map((item) => {
-          const Icon = item.icon;
+          const IconComponent = item.icon;
           const isActive = activeScreen === item.id;
 
           return (
@@ -179,7 +192,7 @@ export function Sidebar({
                   : "text-[#CBD5E1] hover:bg-[#334155] hover:text-white"
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0 md:h-5 md:w-5" />
+              <IconComponent className="h-4 w-4 shrink-0 md:h-5 md:w-5" />
               <span className="text-xs md:text-sm">{item.label}</span>
             </button>
           );
