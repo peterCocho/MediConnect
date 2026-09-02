@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     # Se corrige localhost por 127.0.0.1 y el puerto por 8081
-    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect}
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
     username: ${DATABASE_USERNAME_P:postgres}
     password: ${DB_PASSWORD_P:12345}
   jpa:
@@ -14,6 +14,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: America/Bogota
   flyway:
     locations: classpath:migration
   # Se unifica el bloque jackson dentro del bloque spring principal

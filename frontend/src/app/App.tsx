@@ -94,11 +94,12 @@ function PatientsRoute() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (user?.role === 'RECEPTIONIST') return <PacientesScreen />;
-  if (user?.role === 'DOCTOR') {
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'RECEPTIONIST') return <PacientesScreen />;
+  if (user.role === 'DOCTOR') {
     return <MisPacientesScreen onVerHistorial={(medicalRecordId) => navigate(`/historial?medicalRecordId=${medicalRecordId}`)} />;
   }
-  return <PacientesScreen />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 function DoctorAgendaRoute() {

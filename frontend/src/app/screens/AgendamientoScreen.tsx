@@ -20,6 +20,17 @@ type AppointmentForm = {
   time: string;
 };
 
+const toLocalOffsetISOString = (date: Date) => {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const offsetMinutes = date.getTimezoneOffset();
+  const sign = offsetMinutes <= 0 ? '+' : '-';
+  const absoluteOffset = Math.abs(offsetMinutes);
+  const offsetHours = Math.floor(absoluteOffset / 60);
+  const offsetRemainder = absoluteOffset % 60;
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${pad(offsetHours)}:${pad(offsetRemainder)}`;
+};
+
 const emptyForm: AppointmentForm = {
   patientId: '',
   doctorId: '',
@@ -91,8 +102,8 @@ export function AgendamientoScreen() {
       await api.post('/api/appointments/book', {
         patientId: Number(form.patientId),
         doctorId: Number(form.doctorId),
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
+        startTime: toLocalOffsetISOString(start),
+        endTime: toLocalOffsetISOString(end),
       });
 
       setSuccess('Cita agendada correctamente. La cita queda pendiente de confirmación por WhatsApp.');
