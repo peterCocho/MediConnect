@@ -1,7 +1,9 @@
 import {
   Calendar as CalendarIcon,
-  Clock,
-  Users,
+  UserPlus,
+  BellRing,
+  MessageCircle,
+  CalendarX2,
   Loader2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -20,11 +22,33 @@ type PatientSummary = {
   id: number;
   fullName?: string;
   identityDocument?: string;
+  createdAt?: string;
+};
+
+type ReceptionistMetrics = {
+  arrivalsToday: number;
+  patientsScheduledToday: number;
+  confirmationRateToday: number;
+  unreadWhatsapp: number;
+  releasedSlotsToday: number;
+};
+
+const getDateKey = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const getRelativeDateKey = (daysFromToday: number) => {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + daysFromToday);
+  return getDateKey(date);
 };
 
 export function ReceptionistDashboard() {
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [patients, setPatients] = useState<PatientSummary[]>([]);
+  const [metrics, setMetrics] = useState<ReceptionistMetrics>({ arrivalsToday: 0, patientsScheduledToday: 0, confirmationRateToday: 0, unreadWhatsapp: 0, releasedSlotsToday: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,7 +58,7 @@ export function ReceptionistDashboard() {
         setIsLoading(true);
         setError('');
 
-        const [appointmentsResponse, patientsResponse] = await Promise.all([
+        const [appointmentsResponse, allAppointmentsResponse, notificationsResponse] = await Promise.all([
           api.get('/api/appointments', {
             params: {
               page: 0,
@@ -44,11 +68,31 @@ export function ReceptionistDashboard() {
               endDate: '2100-01-01T00:00:00Z',
             },
           }),
-          api.get('/api/patients', { params: { page: 0, size: 5, sortBy: 'id' } }),
+          api.get('/api/appointments', {
+            params: {
+              page: 0,
+              size: 1000,
+              sort: 'startTime,desc',
+              startDate: '2000-01-01T00:00:00Z',
+              endDate: '2100-01-01T00:00:00Z',
+            },
+          }),
+          api.get('/api/whatsapp/messages/unread'),
         ]);
 
+        const allAppointments = (allAppointmentsResponse.data?.content ?? []) as AppointmentRow[];
+        const today = getRelativeDateKey(0);
         setAppointments((appointmentsResponse.data?.content ?? []) as AppointmentRow[]);
-        setPatients((patientsResponse.data?.content ?? []) as PatientSummary[]);
+        const todayAppointments = allAppointments.filter((appointment) => getDateKey(appointment.startTime) === today);
+        const confirmedToday = todayAppointments.filter((appointment) => appointment.status === 'CONFIRMED' || appointment.status === 'SCHEDULED').length;
+        const pendingToday = todayAppointments.filter((appointment) => appointment.status === 'PENDING_CONFIRMATION').length;
+        setMetrics({
+          arrivalsToday: allAppointments.filter((appointment) => getDateKey(appointment.startTime) === today && appointment.status !== 'CANCELED').length,
+          patientsScheduledToday: todayAppointments.filter((appointment) => appointment.status !== 'CANCELED').length,
+          confirmationRateToday: confirmedToday + pendingToday > 0 ? Math.round((confirmedToday / (confirmedToday + pendingToday)) * 100) : 0,
+          unreadWhatsapp: notificationsResponse.data?.length ?? 0,
+          releasedSlotsToday: todayAppointments.filter((appointment) => appointment.status === 'CANCELED').length,
+        });
       } catch (err) {
         setError('No se pudo cargar el panel del recepcionista.');
       } finally {
@@ -58,8 +102,6 @@ export function ReceptionistDashboard() {
 
     loadReceptionistDashboard();
   }, []);
-
-  const upcomingCount = appointments.filter((cita) => cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED').length;
 
   return (
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
@@ -77,38 +119,60 @@ export function ReceptionistDashboard() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-600">{error}</div>
       ) : (
         <>
-          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <CalendarIcon className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Agenda</span>
+                <span className="text-sm text-[#64748B]">Hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{appointments.length}</h3>
-              <p className="text-sm text-[#64748B]">Citas recientes</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.arrivalsToday}</h3>
+              <p className="text-sm text-[#64748B]">Llegadas programadas</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
-                  <Clock className="h-6 w-6 text-[#2C7A7B]" />
+                  <UserPlus className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Estado</span>
+                <span className="text-sm text-[#64748B]">Carga de hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{upcomingCount}</h3>
-              <p className="text-sm text-[#64748B]">Programadas</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.patientsScheduledToday}</h3>
+              <p className="text-sm text-[#64748B]">Pacientes agendados hoy</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
-                  <Users className="h-6 w-6 text-[#2C7A7B]" />
+                  <BellRing className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Pacientes</span>
+                <span className="text-sm text-[#64748B]">Hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{patients.length}</h3>
-              <p className="text-sm text-[#64748B]">Registrados</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.confirmationRateToday}%</h3>
+              <p className="text-sm text-[#64748B]">Tasa de confirmación diaria</p>
+            </div>
+
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
+                  <MessageCircle className="h-6 w-6 text-[#2C7A7B]" />
+                </div>
+                <span className="text-sm text-[#64748B]">WhatsApp</span>
+              </div>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.unreadWhatsapp}</h3>
+              <p className="text-sm text-[#64748B]">Mensajes sin leer</p>
+            </div>
+
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
+                  <CalendarX2 className="h-6 w-6 text-[#2C7A7B]" />
+                </div>
+                <span className="text-sm text-[#64748B]">Hoy</span>
+              </div>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.releasedSlotsToday}</h3>
+              <p className="text-sm text-[#64748B]">Espacios liberados</p>
             </div>
           </div>
 

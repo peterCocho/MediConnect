@@ -17,6 +17,12 @@ type AlertItem = {
   actionLabel: string;
 };
 
+type SearchRoute = {
+  path: string;
+  label: string;
+  keywords: string[];
+};
+
 const roleLabels = {
   ADMIN: 'Administrador',
   DOCTOR: 'Médico',
@@ -47,13 +53,13 @@ const getGlobalSearchRoutesByRole = (role: User['role']) => {
     return baseRoutes.filter((route) => !['/recepcionistas', '/plantillas', '/citas-global', '/reportes', '/agendamiento', '/notificaciones'].includes(route.path));
   }
 
-  return baseRoutes.filter((route) => !['/usuarios', '/recepcionistas', '/plantillas', '/citas-global', '/reportes', '/mi-agenda', '/historial', '/consulta'].includes(route.path));
+  return baseRoutes.filter((route) => !['/usuarios', '/recepcionistas', '/plantillas', '/reportes', '/mi-agenda', '/historial', '/consulta'].includes(route.path));
 };
 
 export function Header({ user, onLogout }: HeaderProps) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
-  const [searchSuggestions, setSearchSuggestions] = useState<typeof globalSearchRoutes>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<SearchRoute[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertItems, setAlertItems] = useState<AlertItem[]>([]);

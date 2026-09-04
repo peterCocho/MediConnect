@@ -96,7 +96,7 @@ const allMenuItems: MenuItem[] = [
     id: "citas-global",
     label: "Citas Global",
     icon: Calendar,
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "RECEPTIONIST"],
   },
   {
     id: "reportes",
@@ -149,7 +149,7 @@ const allMenuItems: MenuItem[] = [
     label: "Notificaciones",
     icon: Bell,
     roles: ["RECEPTIONIST"],
-  },
+  }
 ];
 
 export function Sidebar({

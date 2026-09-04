@@ -118,7 +118,7 @@ function AppRoutes() {
           <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsuariosScreen /></RoleRoute>} />
           <Route path="/recepcionistas" element={<RoleRoute roles={['ADMIN']}><RecepcionistasScreen /></RoleRoute>} />
           <Route path="/plantillas" element={<RoleRoute roles={['ADMIN']}><AdministracionPlantillasScreen /></RoleRoute>} />
-          <Route path="/citas-global" element={<RoleRoute roles={['ADMIN']}><AgendaGlobalScreen /></RoleRoute>} />
+          <Route path="/citas-global" element={<RoleRoute roles={['ADMIN', 'RECEPTIONIST']}><AgendaGlobalScreen /></RoleRoute>} />
           <Route path="/reportes" element={<RoleRoute roles={['ADMIN']}><ReportesScreen /></RoleRoute>} />
           <Route path="/agendamiento" element={<RoleRoute roles={['RECEPTIONIST']}><AgendamientoScreen /></RoleRoute>} />
           <Route path="/notificaciones" element={<RoleRoute roles={['RECEPTIONIST']}><NotificacionesScreen /></RoleRoute>} />

@@ -1,7 +1,9 @@
 import {
   Calendar as CalendarIcon,
-  Clock,
-  Users,
+  UserCheck,
+  TrendingDown,
+  BarChart3,
+  Activity,
   Loader2,
 } from "lucide-react";
 import { useEffect, useState } from 'react';
@@ -16,13 +18,33 @@ type AppointmentRow = {
   status: string;
 };
 
+type DoctorRow = {
+  id: number;
+  isActive?: boolean;
+  active?: boolean;
+};
+
 type DashboardMetrics = {
   totalCompletedConsultations: number;
   topDiagnoses: Array<{ icd10Code: string; occurrences: number }>;
 };
 
+const getDateKey = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const getRelativeDateKey = (daysFromToday: number) => {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + daysFromToday);
+  return getDateKey(date);
+};
+
 export function DashboardScreen() {
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
+  const [allAppointments, setAllAppointments] = useState<AppointmentRow[]>([]);
+  const [activeDoctorsToday, setActiveDoctorsToday] = useState(0);
   const [metrics, setMetrics] = useState<DashboardMetrics>({ totalCompletedConsultations: 0, topDiagnoses: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,13 +55,27 @@ export function DashboardScreen() {
         setIsLoading(true);
         setError('');
 
-        const [appointmentsResponse, reportResponse] = await Promise.all([
+        const [appointmentsResponse, allAppointmentsResponse, doctorsResponse, reportResponse] = await Promise.allSettled([
           api.get('/api/appointments', { params: { page: 0, size: 5, sort: 'startTime,desc' } }),
+          api.get('/api/appointments', { params: { page: 0, size: 1000, sort: 'startTime,desc' } }),
+          api.get('/api/users/doctors', { params: { page: 0, size: 1000, sortBy: 'id', isActive: true } }),
           api.get('/api/reports/dashboard'),
         ]);
 
-        setAppointments((appointmentsResponse.data?.content ?? []) as AppointmentRow[]);
-        setMetrics((reportResponse.data ?? { totalCompletedConsultations: 0, topDiagnoses: [] }) as DashboardMetrics);
+        const recentAppointments = appointmentsResponse.status === 'fulfilled' ? appointmentsResponse.value.data?.content ?? [] : [];
+        const completeAppointments = (allAppointmentsResponse.status === 'fulfilled' ? allAppointmentsResponse.value.data?.content ?? [] : []) as AppointmentRow[];
+        const activeDoctors = (doctorsResponse.status === 'fulfilled' ? doctorsResponse.value.data?.content ?? [] : []) as DoctorRow[];
+        const reportMetrics = reportResponse.status === 'fulfilled' ? reportResponse.value.data : null;
+        setAppointments(recentAppointments as AppointmentRow[]);
+        const today = getRelativeDateKey(0);
+        const doctorsWithAppointments = new Set(
+          completeAppointments
+            .filter((appointment) => getDateKey(appointment.startTime) === today && appointment.status === 'SCHEDULED')
+            .map((appointment) => appointment.doctorId),
+        );
+        setAllAppointments(completeAppointments);
+        setActiveDoctorsToday(activeDoctors.filter((doctor) => doctorsWithAppointments.has(doctor.id)).length);
+        setMetrics((reportMetrics ?? { totalCompletedConsultations: 0, topDiagnoses: [] }) as DashboardMetrics);
       } catch (err) {
         setError('No se pudo cargar el panel del sistema.');
       } finally {
@@ -49,6 +85,16 @@ export function DashboardScreen() {
 
     loadDashboard();
   }, []);
+
+  const today = getRelativeDateKey(0);
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - 6);
+  const weekCompletedCount = allAppointments.filter((appointment) => appointment.status === 'COMPLETED' && new Date(appointment.startTime) >= weekStart).length;
+  const monthlyAppointments = allAppointments.filter((appointment) => new Date(appointment.startTime).getMonth() === new Date().getMonth() && new Date(appointment.startTime).getFullYear() === new Date().getFullYear());
+  const cancelledAppointments = monthlyAppointments.filter((appointment) => appointment.status === 'CANCELED').length;
+  const cancellationBase = monthlyAppointments.filter((appointment) => appointment.status !== 'CANCELED').length + cancelledAppointments;
+  const cancellationRate = cancellationBase > 0 ? Math.round((cancelledAppointments / cancellationBase) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
@@ -66,38 +112,59 @@ export function DashboardScreen() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-600">{error}</div>
       ) : (
         <>
-          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mb-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
-                  <CalendarIcon className="h-6 w-6 text-[#2C7A7B]" />
+                  <TrendingDown className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Consultas</span>
+                <span className="text-sm text-[#64748B]">Este mes</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.totalCompletedConsultations ?? 0}</h3>
-              <p className="text-sm text-[#64748B]">Completadas</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{cancellationRate}%</h3>
+              <p className="text-sm text-[#64748B]">Tasa de cancelación</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
-                  <Clock className="h-6 w-6 text-[#2C7A7B]" />
+                  <UserCheck className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Agenda</span>
+                <span className="text-sm text-[#64748B]">Hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{appointments.length}</h3>
-              <p className="text-sm text-[#64748B]">Citas recientes</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{activeDoctorsToday}</h3>
+              <p className="text-sm text-[#64748B]">Doctores activos hoy</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
-                  <Users className="h-6 w-6 text-[#2C7A7B]" />
+                  <BarChart3 className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Diagnóstico</span>
+                <span className="text-sm text-[#64748B]">Últimos 7 días</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.topDiagnoses?.[0]?.occurrences ?? 0}</h3>
-              <p className="text-sm text-[#64748B]">{metrics.topDiagnoses?.[0]?.icd10Code ?? 'Sin datos'}</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{weekCompletedCount}</h3>
+              <p className="text-sm text-[#64748B]">Consultas completadas</p>
+            </div>
+
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
+                  <Activity className="h-6 w-6 text-[#2C7A7B]" />
+                </div>
+                <span className="text-sm text-[#64748B]">Diagnósticos más frecuentes</span>
+              </div>
+              {metrics.topDiagnoses?.length ? (
+                <div className="space-y-2">
+                  {metrics.topDiagnoses.slice(0, 3).map((diagnosis) => (
+                    <div key={diagnosis.icd10Code} className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold text-[#1E293B]">{diagnosis.icd10Code}</span>
+                      <span className="text-xs text-[#64748B]">{diagnosis.occurrences} {diagnosis.occurrences === 1 ? 'caso' : 'casos'}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#64748B]">Sin diagnósticos registrados</p>
+              )}
             </div>
           </div>
 
