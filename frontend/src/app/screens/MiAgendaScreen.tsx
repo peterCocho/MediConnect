@@ -1,4 +1,4 @@
-import { Calendar, Clock, Loader2 } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../service/api';
 
@@ -8,6 +8,11 @@ type ConsultationRow = {
   status: string;
   medicalRecordId: number | null;
   doctorId: number | null;
+};
+
+const getDateKey = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
 export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (consultationId: number) => void }) {
@@ -34,9 +39,11 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
     loadAgenda();
   }, []);
 
-  const agenda = useMemo(() => {
-    return (consultas ?? []).filter((consulta) => consulta.status === 'SCHEDULED');
-  }, [consultas]);
+  const today = getDateKey(new Date());
+  const agenda = useMemo(() => (consultas ?? []).filter((consulta) => consulta.consultationDate && getDateKey(consulta.consultationDate) === today), [consultas, today]);
+  const totalDay = agenda.filter((consulta) => consulta.status !== 'CANCELED').length;
+  const waitingRoom = agenda.filter((consulta) => consulta.status === 'CONFIRMED').length;
+  const attendedToday = agenda.filter((consulta) => consulta.status === 'COMPLETED').length;
 
   const formatHour = (value: string) => {
     const date = new Date(value);
@@ -61,7 +68,7 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
         <p className="text-[#64748B]">Consultas programadas del médico autenticado</p>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-6">
+      <div className="mb-8 grid gap-6 sm:grid-cols-3">
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
           <div className="mb-4 flex items-center justify-between">
             <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
@@ -69,8 +76,8 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
             </div>
             <span className="text-sm text-[#64748B]">Hoy</span>
           </div>
-          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{agenda.length}</h3>
-          <p className="text-sm text-[#64748B]">Pacientes programados</p>
+          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{totalDay}</h3>
+          <p className="text-sm text-[#64748B]">Total del día</p>
         </div>
 
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
@@ -80,8 +87,19 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
             </div>
             <span className="text-sm text-[#64748B]">Estado</span>
           </div>
-          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{agenda.filter((c) => c.status === 'SCHEDULED').length}</h3>
-          <p className="text-sm text-[#64748B]">Programadas</p>
+          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{waitingRoom}</h3>
+          <p className="text-sm text-[#64748B]">En sala de espera</p>
+        </div>
+
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
+              <CheckCircle className="h-6 w-6 text-[#10B981]" />
+            </div>
+            <span className="text-sm text-[#64748B]">Hoy</span>
+          </div>
+          <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{attendedToday}</h3>
+          <p className="text-sm text-[#64748B]">Atendidos hoy</p>
         </div>
       </div>
 

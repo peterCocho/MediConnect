@@ -153,7 +153,7 @@ export function ReceptionistDashboard() {
               <p className="text-sm text-[#64748B]">Tasa de confirmación diaria</p>
             </div>
 
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+            {/* <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <MessageCircle className="h-6 w-6 text-[#2C7A7B]" />
@@ -162,7 +162,7 @@ export function ReceptionistDashboard() {
               </div>
               <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{metrics.unreadWhatsapp}</h3>
               <p className="text-sm text-[#64748B]">Mensajes sin leer</p>
-            </div>
+            </div> */}
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
               <div className="mb-4 flex items-center justify-between">

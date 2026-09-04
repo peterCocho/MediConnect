@@ -17,6 +17,11 @@ type DoctorConsultation = {
   reasonForVisit?: string | null;
 };
 
+const getDateKey = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export function DoctorDashboard() {
   const [consultations, setConsultations] = useState<DoctorConsultation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +34,7 @@ export function DoctorDashboard() {
         setError('');
 
         const response = await api.get('/api/consultations', {
-          params: { page: 0, size: 5, sort: 'consultationDate,desc' },
+          params: { page: 0, size: 1000, sort: 'consultationDate,asc' },
         });
 
         setConsultations((response.data?.content ?? []) as DoctorConsultation[]);
@@ -43,9 +48,20 @@ export function DoctorDashboard() {
     loadDoctorDashboard();
   }, []);
 
-  const completedCount = consultations.filter((consultation) =>
-    consultation.status === 'COMPLETED' || consultation.status === 'FINALIZED'
-  ).length;
+  const today = getDateKey(new Date());
+  const todayConsultations = consultations.filter((consultation) => consultation.consultationDate && getDateKey(consultation.consultationDate) === today);
+  const nextAppointment = todayConsultations
+    .filter((consultation) => consultation.status === 'SCHEDULED' || consultation.status === 'CONFIRMED')
+    .sort((first, second) => new Date(first.consultationDate ?? 0).getTime() - new Date(second.consultationDate ?? 0).getTime())[0];
+  const last30Days = new Date();
+  last30Days.setHours(0, 0, 0, 0);
+  last30Days.setDate(last30Days.getDate() - 29);
+  const patientsThisMonth = new Set(
+    consultations
+      .filter((consultation) => (consultation.status === 'COMPLETED' || consultation.status === 'FINALIZED') && consultation.consultationDate && new Date(consultation.consultationDate) >= last30Days)
+      .map((consultation) => consultation.medicalRecordId)
+      .filter((medicalRecordId): medicalRecordId is number => medicalRecordId !== null && medicalRecordId !== undefined),
+  ).size;
 
   return (
     <div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
@@ -69,10 +85,12 @@ export function DoctorDashboard() {
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <CalendarIcon className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Consultas</span>
+                <span className="text-sm text-[#64748B]">Hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{consultations.length}</h3>
-              <p className="text-sm text-[#64748B]">Recientes</p>
+              <h3 className="mb-1 text-xl font-bold text-[#1E293B]">
+                {nextAppointment?.consultationDate ? new Date(nextAppointment.consultationDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }) : 'Sin citas'}
+              </h3>
+              <p className="text-sm text-[#64748B]">Próxima cita · Expediente #{nextAppointment?.medicalRecordId ?? '—'}</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
@@ -80,10 +98,10 @@ export function DoctorDashboard() {
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <Clock className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Estado</span>
+                <span className="text-sm text-[#64748B]">Hoy</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{completedCount}</h3>
-              <p className="text-sm text-[#64748B]">Completadas</p>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{todayConsultations.length}</h3>
+              <p className="text-sm text-[#64748B]">Consultas de hoy</p>
             </div>
 
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
@@ -91,11 +109,9 @@ export function DoctorDashboard() {
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <ClipboardList className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Expediente</span>
+                <span className="text-sm text-[#64748B]">Últimos 30 días</span>
               </div>
-              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">
-                {consultations.filter((consultation) => consultation.medicalRecordId !== null && consultation.medicalRecordId !== undefined).length}
-              </h3>
+              <h3 className="mb-1 text-3xl font-bold text-[#1E293B]">{patientsThisMonth}</h3>
               <p className="text-sm text-[#64748B]">Pacientes atendidos</p>
             </div>
           </div>
