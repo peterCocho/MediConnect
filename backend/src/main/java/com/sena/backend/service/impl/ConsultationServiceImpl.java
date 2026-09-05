@@ -5,6 +5,7 @@ import com.sena.backend.domain.consultation.ConsultationResponseDTO;
 import com.sena.backend.domain.consultation.ExecuteConsultationRequestDTO;
 import com.sena.backend.entity.Consultation;
 import com.sena.backend.entity.Doctor;
+import com.sena.backend.entity.Patient;
 import com.sena.backend.exception.BusinessRuleException;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.ConsultationRepository;
@@ -26,6 +27,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     private final ConsultationRepository consultationRepository;
     private final DoctorRepository doctorRepository;
+    
 
     @Override
     @Transactional
@@ -96,10 +98,18 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .map(this::mapToDTO);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ConsultationResponseDTO> getCompletedConsultationsByDoctorId(Long doctorId, Pageable pageable) {
+        return consultationRepository.findByDoctorIdAndStatus(doctorId, AppointmentStatus.COMPLETED, pageable)
+                .map(this::mapToDTO);
+    }
+
     private ConsultationResponseDTO mapToDTO(Consultation entity) {
         Long docId = (entity.getDoctor() != null) ? entity.getDoctor().getId() : null;
         Long recId = (entity.getMedicalRecord() != null) ? entity.getMedicalRecord().getId() : null;
         Long apptId = (entity.getAppointment() != null) ? entity.getAppointment().getId() : null;
+        Patient patient = entity.getMedicalRecord() != null ? entity.getMedicalRecord().getPatient() : null;
 
         return ConsultationResponseDTO.builder()
                 .id(entity.getId())
@@ -108,6 +118,11 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .status(entity.getStatus().name())
                 .doctorId(docId)
                 .medicalRecordId(recId)
+                .patientId(patient != null ? patient.getId() : null)
+                .identityDocument(patient != null ? patient.getIdentityDocument() : null)
+                .fullName(patient != null ? patient.getFullName() : null)
+                .phone(patient != null ? patient.getPhone() : null)
+                .birthDate(patient != null ? patient.getBirthDate() : null)
                 .systolicPressure(entity.getSystolicPressure())
                 .diastolicPressure(entity.getDiastolicPressure())
                 .heartRate(entity.getHeartRate())

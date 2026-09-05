@@ -24,6 +24,8 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
 
     Page<Consultation> findByDoctorId(Long doctorId, Pageable pageable);
 
+    Page<Consultation> findByDoctorIdAndStatus(Long doctorId, AppointmentStatus status, Pageable pageable);
+
     Optional<Consultation> findByAppointmentId(Long appointmentId);
 
     List<Consultation> findByMedicalRecordIdAndStatusOrderByConsultationDateDesc(Long medicalRecordId, AppointmentStatus status);

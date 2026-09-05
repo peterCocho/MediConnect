@@ -3,6 +3,7 @@ package com.sena.backend.domain.consultation;
 import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
@@ -24,4 +25,11 @@ public class ConsultationResponseDTO {
     // Crucial for the frontend to render meaningful UI instead of raw IDs
     private Long doctorId;
     private Long medicalRecordId;
+
+    private Long patientId;
+    private String identityDocument;
+    private String fullName;
+    private String phone;
+    private LocalDate birthDate;
+
 }

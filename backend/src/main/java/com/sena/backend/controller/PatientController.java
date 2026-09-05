@@ -28,7 +28,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION' 'ROLE_DOCTOR')")
     public ResponseEntity<PatientResponse> getPatientById(@PathVariable Long id) {
         return ResponseEntity.ok(patientService.getPatientById(id));
     }

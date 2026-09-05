@@ -90,20 +90,30 @@ export function Header({ user, onLogout }: HeaderProps) {
           return;
         }
 
-        const response = await api.get('/api/consultations', {
-          params: { page: 0, size: 5, sort: 'consultationDate,asc' },
-        });
+        const isToday = (date: string) => {
+      const consultationDate = new Date(date);
+      const today = new Date();
+      return (
+        consultationDate.getFullYear() === today.getFullYear() &&
+        consultationDate.getMonth() === today.getMonth() &&
+        consultationDate.getDate() === today.getDate()
+      );
+    };
 
-        const items = (response.data?.content ?? [])
-          .filter((consultation: any) => consultation.status === 'SCHEDULED')
-          .slice(0, 5)
-          .map((consultation: any) => ({
-            id: consultation.id,
-            title: `Consulta programada`,
-            subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`,
-            path: '/mi-agenda',
-            actionLabel: 'Ir a mi agenda',
-          }));
+    const response = await api.get('/api/consultations', {
+      params: { page: 0, size: 5, sort: 'consultationDate,asc' },
+    });
+
+    const items = (response.data?.content ?? [])
+      .filter((consultation: any) => consultation.status === 'SCHEDULED' && isToday(consultation.consultationDate))
+      .slice(0, 5)
+      .map((consultation: any) => ({
+        id: consultation.id,
+        title: `Consulta programada`,
+        subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`,
+        path: '/mi-agenda',
+        actionLabel: 'Ir a mi agenda',
+      }));
 
         setAlertItems(items);
       } catch (error) {
@@ -235,9 +245,9 @@ export function Header({ user, onLogout }: HeaderProps) {
               </div>
             )}
 
-            <div className="hidden h-8 w-px bg-[#E2E8F0] lg:block"></div>
+            <div className="hidden h-8 w-px bg-[#E2E8F0] md:block"></div>
 
-            <div className="hidden items-center gap-3 lg:flex">
+            <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2C7A7B]">
                 <span className="text-sm font-semibold text-white">
                   {user.name.split(' ').map((n) => n[0]).join('')}
@@ -264,57 +274,40 @@ export function Header({ user, onLogout }: HeaderProps) {
       </header>
 
       {isAlertOpen && shouldShowBell && (
-        <div className="fixed inset-0 z-50 flex items-start justify-end bg-slate-900/20 p-4 pt-20">
-          <div className="w-full max-w-md rounded-2xl border border-[#E2E8F0] bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-4 py-3">
-              <div>
-                <h2 className="text-base font-semibold text-[#1E293B]">Notificaciones</h2>
-                <p className="text-xs text-[#64748B]">
-                  {user.role === 'RECEPTIONIST' ? 'Mensajes por revisar' : 'Consultas pendientes'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAlertOpen(false)}
-                className="rounded-lg p-2 text-[#64748B] hover:bg-[#F8FAFC]"
-                aria-label="Cerrar notificaciones"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="max-h-[420px] overflow-y-auto p-3">
-              {isLoadingAlerts ? (
-                <div className="py-8 text-center text-sm text-[#64748B]">Cargando...</div>
-              ) : alertItems.length === 0 ? (
-                <div className="py-8 text-center text-sm text-[#64748B]">
-                  No tienes notificaciones pendientes.
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {alertItems.map((item) => (
-                    <li key={item.id} className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-[#1E293B]">{item.title}</span>
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#EF4444]" />
-                      </div>
-                      <p className="text-xs text-[#64748B]">{item.subtitle}</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigate(item.path);
-                          setIsAlertOpen(false);
-                        }}
-                        className="mt-3 inline-flex rounded-lg bg-[#2C7A7B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#235E5F]"
-                      >
-                        {item.actionLabel}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        <div className="absolute right-4 top-16 z-50 w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-xl lg:right-8 lg:top-[72px]">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[#1E293B]">Notificaciones</h2>
+            <button
+              type="button"
+              onClick={() => setIsAlertOpen(false)}
+              className="rounded-md p-1 text-[#64748B] hover:bg-[#F8FAFC]"
+              aria-label="Cerrar notificaciones"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
+          {isLoadingAlerts ? (
+            <p className="text-sm text-[#64748B]">Cargando...</p>
+          ) : alertItems.length === 0 ? (
+            <p className="text-sm text-[#64748B]">No hay notificaciones nuevas.</p>
+          ) : (
+            <div className="space-y-2">
+              {alertItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    navigate(item.path);
+                    setIsAlertOpen(false);
+                  }}
+                  className="w-full rounded-lg bg-[#F8FAFC] p-3 text-left hover:bg-[#F1F5F9]"
+                >
+                  <div className="text-sm font-medium text-[#1E293B]">{item.title}</div>
+                  <div className="mt-1 text-xs text-[#64748B]">{item.subtitle}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>

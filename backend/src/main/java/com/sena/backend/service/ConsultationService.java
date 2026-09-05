@@ -19,4 +19,6 @@ public interface ConsultationService {
     ConsultationResponseDTO getConsultationByIdAndDoctorId(Long id, Long doctorId);
 
     Page<ConsultationResponseDTO> getConsultationsByDoctorId(Long doctorId, Pageable pageable);
+
+    Page<ConsultationResponseDTO> getCompletedConsultationsByDoctorId(Long doctorId, Pageable pageable);
 }

@@ -2,8 +2,18 @@ import { Search, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../service/api';
 
+interface ConsultationDto {
+  medicalRecordId?: number | null;
+  patientId?: number | null;
+  identityDocument: string;
+  fullName: string;
+  phone: string;
+  birthDate: string | null;
+}
+
 type PatientRow = {
   id: number;
+  patientId: number;
   identityDocument: string;
   fullName: string;
   phone: string;
@@ -23,28 +33,35 @@ export function MisPacientesScreen({ onVerHistorial }: { onVerHistorial?: (medic
         setIsLoading(true);
         setError('');
 
-        const consultationResponse = await api.get('/api/consultations', {
+        const consultationResponse = await api.get('/api/consultations/patients', {
           params: { page: 0, size: 100, sort: 'consultationDate,desc' },
         });
 
         const uniquePatients = new Map<number, PatientRow>();
 
-        (consultationResponse.data?.content ?? []).forEach((consultation: any) => {
-          const recordId = consultation?.medicalRecordId;
-          if (recordId == null) return;
+        // 2. Replace 'any' with 'ConsultationDto'
+        (consultationResponse.data?.content ?? []).forEach((consultation: ConsultationDto) => {
+          // Guard clause against potentially null objects from the API array
+          if (!consultation) return;
+
+          const recordId = consultation.medicalRecordId;
+          const patientId = consultation.patientId;
+          
+          if (recordId == null || patientId == null) return;
 
           const compiled = {
-            id: recordId,
-            identityDocument: `Expediente #${recordId}`,
-            fullName: `Paciente expediente ${recordId}`,
-            phone: '—',
-            birthDate: null,
+            id: patientId,
+            patientId,
+            identityDocument: consultation.identityDocument,
+            fullName: consultation.fullName,
+            phone: consultation.phone,
+            birthDate: consultation.birthDate,
             medicalRecordId: recordId,
           } satisfies PatientRow;
 
           uniquePatients.set(recordId, compiled);
         });
-
+        
         setPacientes(Array.from(uniquePatients.values()));
       } catch (err) {
         setError('No se pudieron cargar los pacientes atendidos por este doctor.');

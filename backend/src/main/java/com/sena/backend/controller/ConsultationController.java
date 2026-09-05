@@ -57,6 +57,15 @@ public class ConsultationController {
         return ResponseEntity.ok(consultations);
     }
 
+    @GetMapping("/patients")
+    public ResponseEntity<Page<ConsultationResponseDTO>> getCompletedPatientsForAuthenticatedDoctor(
+            Authentication authentication,
+            Pageable pageable
+    ) {
+        Long authenticatedDoctorId = extractDoctorId(authentication);
+        return ResponseEntity.ok(consultationService.getCompletedConsultationsByDoctorId(authenticatedDoctorId, pageable));
+    }
+
     // HU-07: Immutable clinical timeline endpoint
     @GetMapping("/patient-timeline/{medicalRecordId}")
     public ResponseEntity<List<ConsultationResponseDTO>> getPatientTimeline(
