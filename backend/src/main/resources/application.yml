@@ -3,10 +3,15 @@ server:
 
 spring:
   datasource:
-    # Se corrige localhost por 127.0.0.1 y el puerto por 8081
-    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
-    username: ${DATABASE_USERNAME_P:postgres}
-    password: ${DB_PASSWORD_P:12345}
+    # Local development configuration
+    #url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
+    #username: ${DATABASE_USERNAME_P:postgres}
+    #password: ${DB_PASSWORD_P:BkiIzqDwaYxQyVgGUOBSAxTihiBefvUV}
+
+    # Railway remote configuration
+    url: jdbc:postgresql://altaria.proxy.rlwy.net:32649/railway
+    username: postgres
+    password: BkiIzqDwaYxQyVgGUOBSAxTihiBefvUV
   jpa:
     hibernate:
       ddl-auto: none
@@ -18,7 +23,6 @@ spring:
           time_zone: America/Bogota
   flyway:
     locations: classpath:migration
-  # Se unifica el bloque jackson dentro del bloque spring principal
   jackson:
     serialization:
       write-dates-as-timestamps: false
@@ -36,21 +40,12 @@ jwt:
   secret: ${JWT_SECRET:change_this_to_a_strong_secret}
   expiration_minutes: ${JWT_EXP_MINUTES:180}
 
-# Bootstrap del administrador inicial (DataInitializer)
+# Initial admin setup bootstrap (DataInitializer)
 admin:
   setup:
     password: ${ADMIN_SETUP_PASSWORD:admin123}
 
-# Integración n8n (Movido a la raíz, fuera de jwt)
-# n8n cloud
-#n8n:
-#  api:
-#    key: ${N8N_API_KEY:dev-secret-key-123}
-#  webhook:
-#    url: ${N8N_WEBHOOK_URL:https://mediconnect.app.n8n.cloud/webhook/confirmacion-cita}
-#    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://mediconnect.app.n8n.cloud/webhook/recordatorio-cita}
-
-# n8n local
+# n8n local integration
 n8n:
   api:
     key: ${N8N_API_KEY:dev-secret-key-123}
