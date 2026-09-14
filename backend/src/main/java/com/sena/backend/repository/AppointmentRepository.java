@@ -38,4 +38,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                        @Param("endTime") OffsetDateTime endTime);
 
     List<Appointment> findByStatusAndStartTimeBetween(AppointmentStatus status, OffsetDateTime start, OffsetDateTime end);
+
+    // Fetch all appointments matching a specific status
+    List<Appointment> findByStatus(AppointmentStatus status);
 }

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -202,5 +203,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         return appointmentRepository.findByStartTimeBetween(start, end, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
+        return appointmentRepository.findByStatus(status);
     }
 }

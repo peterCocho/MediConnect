@@ -48,7 +48,10 @@ public class NotificationScheduler {
         this.restTemplate = restTemplate;
         this.consultationRepository = consultationRepository;
     }
-    @Scheduled(cron = "0 0 * * * *")
+
+
+    //@Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 60000)
     public void send24hReminders() {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime tomorrowStart = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);

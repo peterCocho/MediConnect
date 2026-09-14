@@ -1,5 +1,6 @@
 package com.sena.backend.controller;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.domain.appointment.BookAppointmentRequestDTO;
 import com.sena.backend.domain.appointment.CancelAppointmentRequestDTO;
 import com.sena.backend.domain.appointment.AppointmentResponseDTO;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -91,6 +93,17 @@ public class AppointmentController {
         Page<Appointment> appointments = appointmentService.getDoctorAppointments(doctorId, pageable);
         // Map paginated agenda data for a specific doctor
         Page<AppointmentResponseDTO> response = appointments.map(this::convertToResponseDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    // Nuevo endpoint para las citas "Por Revisar" (Naranja)
+    @GetMapping("/pending-confirmation")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    public ResponseEntity<List<AppointmentResponseDTO>> getPendingConfirmations() {
+        // Asumiendo que agregas un findByStatus en AppointmentRepository
+        // y su lógica correspondiente en AppointmentService
+        List<Appointment> pending = appointmentService.getAppointmentsByStatus(AppointmentStatus.PENDING_CONFIRMATION);
+        List<AppointmentResponseDTO> response = pending.stream().map(this::convertToResponseDTO).toList();
         return ResponseEntity.ok(response);
     }
 

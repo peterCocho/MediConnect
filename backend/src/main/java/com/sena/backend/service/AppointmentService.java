@@ -1,5 +1,6 @@
 package com.sena.backend.service;
 
+import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.entity.Appointment;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -24,4 +25,6 @@ public interface AppointmentService {
     Page<Appointment> getAllAppointments(OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable);
 
     Appointment confirmAppointment(Long appointmentId);
+
+    List<Appointment> getAppointmentsByStatus(AppointmentStatus status);
 }

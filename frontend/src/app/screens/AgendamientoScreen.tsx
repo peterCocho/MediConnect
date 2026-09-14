@@ -109,8 +109,23 @@ export function AgendamientoScreen() {
       setSuccess('Cita agendada correctamente. La cita queda pendiente de confirmación por WhatsApp.');
       setForm(emptyForm);
     } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'No se pudo agendar la cita.';
-      setError(message);
+      if (err?.response?.status === 409) {
+        setError('El médico ya tiene una cita asignada en este horario o el bloque se encuentra ocupado.');
+        return;
+      }
+
+      // Extraer estructura exacta de ValidationErrorResponseDTO o ErrorResponseDTO
+      if (err?.response?.data) {
+        const data = err.response.data;
+        if (data.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
+          const firstError = Object.values(data.fieldErrors)[0] as string;
+          setError(`Validación: ${firstError}`);
+        } else {
+          setError(data.message || 'No se pudo agendar la cita.');
+        }
+      } else {
+        setError(err?.message || 'Error de conexión con el servidor.');
+      }
     } finally {
       setSubmitting(false);
     }

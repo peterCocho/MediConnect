@@ -46,9 +46,33 @@ admin:
     password: ${ADMIN_SETUP_PASSWORD:admin123}
 
 # n8n local integration
+#n8n:
+#  api:
+#    key: ${N8N_API_KEY:dev-secret-key-123}
+#  webhook:
+#    url: ${N8N_WEBHOOK_URL:https://masteracademy1492.app.n8n.cloud/webhook/confirmacion-cita}
+#    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://masteracademy1492.app.n8n.cloud/webhook/recordatorio-cita}
+
+#n8n:
+#  api:
+#    key: ${N8N_API_KEY:dev-secret-key-123}
+#  webhook:
+#    url: ${N8N_WEBHOOK_URL:https://masteracademy1492.app.n8n.cloud/webhook-test/confirmacion-cita}
+#    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://masteracademy1492.app.n8n.cloud/webhook-test/recordatorio-cita}
+
+
+# n8n remote integration
 n8n:
   api:
     key: ${N8N_API_KEY:dev-secret-key-123}
   webhook:
-    url: ${N8N_WEBHOOK_URL:http://localhost:5678/webhook/confirmacion-cita}
-    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:http://localhost:5678/webhook/recordatorio-cita}
+    url: ${N8N_WEBHOOK_URL:http://20.186.24.153:5678/webhook/confirmacion-cita}
+    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:http://20.186.24.153:5678/webhook/recordatorio-cita}
+
+
+# Evolution API configuration
+evolution:
+  api:
+    url: ${EVOLUTION_API_URL:http://20.186.24.153:8080}
+    key: ${EVOLUTION_API_KEY:429683C4C977415CAAFCCE10F7D57E11}
+    instance: ${EVOLUTION_INSTANCE_NAME:appointments-mediconnect}
