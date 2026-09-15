@@ -4,9 +4,7 @@ import com.sena.backend.entity.ErrorLog;
 import com.sena.backend.repository.ErrorLogRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,17 +25,25 @@ public class ErrorLogController {
     @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
     public ResponseEntity<Map<String, Long>> getErrorCount() {
         long count = errorLogRepository.count();
-
         Map<String, Long> response = new HashMap<>();
         response.put("count", count);
-
         return ResponseEntity.ok(response);
     }
+
     // Devuelve la lista completa de errores del sistema
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
     public ResponseEntity<List<ErrorLog>> getErrorDetails() {
-        // Utiliza el findAll nativo de JpaRepository
         return ResponseEntity.ok(errorLogRepository.findAll());
+    }
+
+    // Deletes a specific error log entry after it has been reviewed
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
+    public ResponseEntity<Void> dismissError(@PathVariable Long id) {
+        if (errorLogRepository.existsById(id)) {
+            errorLogRepository.deleteById(id);
+        }
+        return ResponseEntity.noContent().build();
     }
 }
