@@ -4,17 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sena.backend.domain.AppointmentStatus;
 import com.sena.backend.entity.Appointment;
 import com.sena.backend.entity.Consultation;
+import com.sena.backend.entity.ErrorLog;
 import com.sena.backend.entity.Notification;
 import com.sena.backend.entity.Patient;
 import com.sena.backend.repository.AppointmentRepository;
 import com.sena.backend.repository.ConsultationRepository;
+import com.sena.backend.repository.ErrorLogRepository;
 import com.sena.backend.repository.NotificationRepository;
 import com.sena.backend.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -31,24 +30,25 @@ public class NotificationScheduler {
     private final NotificationRepository notificationRepository;
     private final PatientRepository patientRepository;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ConsultationRepository consultationRepository;
+    private final ErrorLogRepository errorLogRepository; // 1. Inyectamos el repositorio de errores
 
     @Value("${n8n.webhook.reminder-url}")
     private String n8nReminderWebhookUrl;
-    private final ConsultationRepository consultationRepository;
 
     public NotificationScheduler(AppointmentRepository appointmentRepository,
                                  NotificationRepository notificationRepository,
                                  PatientRepository patientRepository,
                                  RestTemplate restTemplate,
-                                 @Lazy ConsultationRepository consultationRepository) {
+                                 @Lazy ConsultationRepository consultationRepository,
+                                 ErrorLogRepository errorLogRepository) { // Agregado al constructor
         this.appointmentRepository = appointmentRepository;
         this.notificationRepository = notificationRepository;
         this.patientRepository = patientRepository;
         this.restTemplate = restTemplate;
         this.consultationRepository = consultationRepository;
+        this.errorLogRepository = errorLogRepository;
     }
-
 
     //@Scheduled(cron = "0 0 * * * *")
     @Scheduled(fixedRate = 60000)
@@ -102,7 +102,16 @@ public class NotificationScheduler {
             notification.setStatus("SENT");
         } catch (Exception e) {
             notification.setStatus("FAILED");
-            System.err.println("Fallo al enviar el recordatorio a n8n para la cita " + appointment.getId() + ": " + e.getMessage());
+
+            // 2. Creamos un registro de error amigable para la recepcionista
+            ErrorLog errorLog = new ErrorLog();
+            errorLog.setTimestamp(OffsetDateTime.now());
+            errorLog.setExceptionType("Fallo de Mensajería");
+            errorLog.setPath("Recordatorio de Citas");
+            errorLog.setMessage("No se pudo enviar el recordatorio al paciente " + patient.getFullName() +
+                    " (" + patient.getPhone() + "). WhatsApp/n8n no responde.");
+
+            errorLogRepository.save(errorLog);
         } finally {
             notification.setUpdatedAt(OffsetDateTime.now());
             notificationRepository.save(notification);

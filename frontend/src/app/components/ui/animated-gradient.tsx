@@ -181,8 +181,8 @@ export function AnimatedGradient({
 
             const animate = (time: number) => {
                 const elapsed = (time - startTimeRef.current) / 1000;
-                // const speed = (params.speed / 100) * 5;
-                const speed = 0;
+                const speed = (params.speed / 100) * 5;
+                // const speed = 0;
 
 
                 gl.uniform1f(uniforms.u_time, elapsed * speed + params.offset * 0.01);

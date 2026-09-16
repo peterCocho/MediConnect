@@ -5,6 +5,7 @@ import com.sena.backend.entity.Appointment;
 import com.sena.backend.entity.Patient;
 import com.sena.backend.repository.AppointmentRepository;
 import com.sena.backend.repository.PatientRepository;
+import com.sena.backend.service.ErrorLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,11 +20,11 @@ public class N8nWebhookEventListener {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final RestTemplate restTemplate;
+    private final ErrorLogService errorLogService; // Injected custom service
 
     @Value("${n8n.webhook.url}")
     private String n8nWebhookUrl;
 
-    // Executes only after the database transaction commits successfully
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAppointmentRequiresConfirmation(AppointmentRequiresConfirmationEvent event) {
         Appointment appointment = appointmentRepository.findById(event.getAppointmentId()).orElse(null);
@@ -36,7 +37,6 @@ public class N8nWebhookEventListener {
             return;
         }
 
-        // Build the payload for n8n
         AppointmentConfirmationWebhookDTO payload = AppointmentConfirmationWebhookDTO.builder()
                 .appointmentId(appointment.getId())
                 .patientPhone(patient.getPhone())
@@ -45,12 +45,15 @@ public class N8nWebhookEventListener {
                 .build();
 
         try {
-            // Dispatch the POST request to n8n webhook
             restTemplate.postForEntity(n8nWebhookUrl, payload, Void.class);
         } catch (Exception e) {
-            // Log the error.
-            // In a production environment, implement a retry mechanism or DLQ (Dead Letter Queue)
-            System.err.println("Fallo al enviar el webhook de confirmación a n8n: " + e.getMessage());
+            // Save human-readable error if n8n is completely down
+            errorLogService.saveIntegrationError(
+                    "Confirmación de Citas",
+                    patient.getFullName(),
+                    patient.getPhone(),
+                    "El servidor de n8n está apagado o inaccesible."
+            );
         }
     }
 }
