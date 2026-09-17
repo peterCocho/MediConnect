@@ -30,11 +30,17 @@ public class ErrorLogController {
         return ResponseEntity.ok(response);
     }
 
-    // Devuelve la lista completa de errores del sistema
+    // Retrieves a paginated and descending ordered list of system errors
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
-    public ResponseEntity<List<ErrorLog>> getErrorDetails() {
-        return ResponseEntity.ok(errorLogRepository.findAll());
+    public ResponseEntity<org.springframework.data.domain.Page<ErrorLog>> getErrorDetails(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        org.springframework.data.domain.Pageable pageable =
+                org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("timestamp").descending());
+
+        return ResponseEntity.ok(errorLogRepository.findAll(pageable));
     }
 
     // Deletes a specific error log entry after it has been reviewed

@@ -108,11 +108,9 @@ export function AgendamientoScreen() {
 
       setSuccess('Cita agendada correctamente. La cita queda pendiente de confirmación por WhatsApp.');
       setForm(emptyForm);
-    } catch (err: any) {
-      if (err?.response?.status === 409) {
-        setError('El médico ya tiene una cita asignada en este horario o el bloque se encuentra ocupado.');
-        return;
-      }
+      setSubmitting(false);
+} catch (err: any) {
+      // ELIMINAMOS el bloque que atrapaba el status 409 a ciegas para dejar pasar el mensaje real del backend
 
       // Extraer estructura exacta de ValidationErrorResponseDTO o ErrorResponseDTO
       if (err?.response?.data) {
@@ -121,13 +119,15 @@ export function AgendamientoScreen() {
           const firstError = Object.values(data.fieldErrors)[0] as string;
           setError(`Validación: ${firstError}`);
         } else {
+          // Aquí se mostrará exactamente "No se puede agendar: El paciente se encuentra inactivo." 
+          // o "El médico seleccionado ya tiene una cita..." si el backend envía ese mensaje en el 409.
           setError(data.message || 'No se pudo agendar la cita.');
+          setSubmitting(false);
         }
       } else {
         setError(err?.message || 'Error de conexión con el servidor.');
+        setSubmitting(false);
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -213,7 +213,10 @@ export function AgendamientoScreen() {
             </button>
             <button
               type="button"
-              onClick={() => setForm(emptyForm)}
+              onClick={() => { 
+                setForm(emptyForm);
+                setSubmitting(false);
+              } }
               className="rounded-lg border border-[#CBD5E1] bg-[#F1F5F9] px-8 py-3 font-medium text-[#475569] transition-colors hover:bg-[#E2E8F0]"
             >
               Limpiar

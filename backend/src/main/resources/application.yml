@@ -4,14 +4,14 @@ server:
 spring:
   datasource:
     #Local development configuration
-    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
-    username: ${DATABASE_USERNAME_P:postgres}
-    password: ${DB_PASSWORD_P:12345}
+#    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
+#    username: ${DATABASE_USERNAME_P:postgres}
+#    password: ${DB_PASSWORD_P:12345}
 
-    # Railway remote configuration
-#    url: jdbc:postgresql://altaria.proxy.rlwy.net:32649/railway
-#    username: postgres
-#    password: BkiIzqDwaYxQyVgGUOBSAxTihiBefvUV
+    #Railway remote configuration
+    url: jdbc:postgresql://altaria.proxy.rlwy.net:32649/railway
+    username: postgres
+    password: BkiIzqDwaYxQyVgGUOBSAxTihiBefvUV
   jpa:
     hibernate:
       ddl-auto: none

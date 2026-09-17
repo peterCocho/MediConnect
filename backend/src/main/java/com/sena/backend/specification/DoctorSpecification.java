@@ -27,9 +27,9 @@ public class DoctorSpecification {
                 ));
             }
 
-            // Strict search by boolean
+            // Strict search by boolean navigated through the 'user' relation
             if (isActive != null) {
-                predicates.add(criteriaBuilder.equal(root.get("isActive"), isActive));
+                predicates.add(criteriaBuilder.equal(root.get("user").get("isActive"), isActive));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
