@@ -39,7 +39,7 @@ public class AppointmentController {
                 request.getStartTime(),
                 request.getEndTime()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDTO(appointment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.mapToDTO(appointment));
     }
 
     @PatchMapping("/{id}/cancel")
@@ -49,14 +49,14 @@ public class AppointmentController {
             @Valid @RequestBody CancelAppointmentRequestDTO request
     ) {
         Appointment cancelledAppointment = appointmentService.cancelAppointment(id, request.reason());
-        return ResponseEntity.ok(convertToResponseDTO(cancelledAppointment));
+        return ResponseEntity.ok(appointmentService.mapToDTO(cancelledAppointment));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
     public ResponseEntity<AppointmentResponseDTO> getAppointment(@PathVariable Long id) {
         Appointment appointment = appointmentService.getAppointmentById(id);
-        return ResponseEntity.ok(convertToResponseDTO(appointment));
+        return ResponseEntity.ok(appointmentService.mapToDTO(appointment));
     }
 
     @GetMapping
@@ -64,12 +64,10 @@ public class AppointmentController {
     public ResponseEntity<Page<AppointmentResponseDTO>> getAllAppointments(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endDate,
-            @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<Appointment> appointments = appointmentService.getAllAppointments(startDate, endDate, pageable);
-        // Map page elements from Entity to Response DTO
-        Page<AppointmentResponseDTO> response = appointments.map(this::convertToResponseDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(appointments.map(appointmentService::mapToDTO));
     }
 
     @GetMapping("/patient/{patientId}")
@@ -79,9 +77,7 @@ public class AppointmentController {
             @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<Appointment> appointments = appointmentService.getPatientAppointments(patientId, pageable);
-        // Map paginated historical data for a specific patient
-        Page<AppointmentResponseDTO> response = appointments.map(this::convertToResponseDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(appointments.map(appointmentService::mapToDTO));
     }
 
     @GetMapping("/doctor/{doctorId}")
@@ -91,33 +87,21 @@ public class AppointmentController {
             @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<Appointment> appointments = appointmentService.getDoctorAppointments(doctorId, pageable);
-        // Map paginated agenda data for a specific doctor
-        Page<AppointmentResponseDTO> response = appointments.map(this::convertToResponseDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(appointments.map(appointmentService::mapToDTO));
     }
 
-    // Nuevo endpoint para las citas "Por Revisar" (Naranja)
     @GetMapping("/pending-confirmation")
     @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION', 'ROLE_ADMIN')")
     public ResponseEntity<List<AppointmentResponseDTO>> getPendingConfirmations() {
-        // Asumiendo que agregas un findByStatus en AppointmentRepository
-        // y su lógica correspondiente en AppointmentService
         List<Appointment> pending = appointmentService.getAppointmentsByStatus(AppointmentStatus.PENDING_CONFIRMATION);
-        List<AppointmentResponseDTO> response = pending.stream().map(this::convertToResponseDTO).toList();
+        List<AppointmentResponseDTO> response = pending.stream().map(appointmentService::mapToDTO).toList();
         return ResponseEntity.ok(response);
     }
 
-    // Helper method to uncouple the database entity from the web response layer
-    private AppointmentResponseDTO convertToResponseDTO(Appointment appointment) {
-        return AppointmentResponseDTO.builder()
-                .id(appointment.getId())
-                .consultationId(appointment.getConsultation() != null ? appointment.getConsultation().getId() : null)
-                .patientId(appointment.getPatientId())
-                .doctorId(appointment.getDoctorId())
-                .startTime(appointment.getStartTime())
-                .endTime(appointment.getEndTime())
-                .status(appointment.getStatus().name())
-                .cancellationReason(appointment.getCancellationReason())
-                .build();
+    @PatchMapping("/{id}/confirm")
+    @PreAuthorize("hasAnyAuthority('ROLE_RECEPTION')")
+    public ResponseEntity<AppointmentResponseDTO> confirmAppointment(@PathVariable Long id) {
+        Appointment confirmedAppointment = appointmentService.confirmAppointment(id);
+        return ResponseEntity.ok(appointmentService.mapToDTO(confirmedAppointment));
     }
 }

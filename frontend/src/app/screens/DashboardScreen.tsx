@@ -167,7 +167,7 @@ export function DashboardScreen() {
                 <div className="rounded-lg bg-[#8CD6D1] bg-opacity-20 p-3">
                   <Activity className="h-6 w-6 text-[#2C7A7B]" />
                 </div>
-                <span className="text-sm text-[#64748B]">Diagnósticos más frecuentes</span>
+                <span className="text-sm text-[#64748B] ml-5">Diagnósticos más frecuentes</span>
               </div>
               {metrics.topDiagnoses?.length ? (
                 <div className="space-y-2">

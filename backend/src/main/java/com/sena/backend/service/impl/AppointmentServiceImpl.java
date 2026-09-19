@@ -1,6 +1,7 @@
 package com.sena.backend.service.impl;
 
 import com.sena.backend.ConsultationScheduledEvent;
+import com.sena.backend.domain.appointment.AppointmentResponseDTO;
 import com.sena.backend.entity.Appointment;
 import com.sena.backend.entity.Consultation;
 import com.sena.backend.entity.Doctor;
@@ -58,6 +59,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if (!patient.getIsActive()) {
             throw new BusinessRuleException("No se puede agendar: El paciente se encuentra inactivo.");
+        }
+
+        // 1. Check for patient time overlaps before acquiring doctor locks
+        if (appointmentRepository.hasPatientOverlappingAppointments(patientId, start, end)) {
+            throw new BusinessRuleException("El paciente ya tiene una cita programada que se cruza con este horario.");
         }
 
         // 1. Acquire pessimistic lock on the doctor's record to serialize concurrent requests
@@ -209,5 +215,74 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public List<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
         return appointmentRepository.findByStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseDTO> getPendingAppointmentsEnriched() {
+        List<Appointment> pendingAppointments = appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION);
+        return pendingAppointments.stream()
+                .map(this::convertToEnrichedDTO)
+                .toList();
+    }
+
+    private AppointmentResponseDTO convertToEnrichedDTO(Appointment appointment) {
+        // Extraer nombre del paciente
+        String patientName = patientRepository.findById(appointment.getPatientId())
+                .map(Patient::getFullName)
+                .orElse("Paciente Desconocido");
+
+        // Extraer datos del doctor
+        String doctorName = "No asignado";
+        String specialty = "Sin especialidad";
+
+        Doctor doctor = doctorRepository.findById(appointment.getDoctorId()).orElse(null);
+        if (doctor != null) {
+            doctorName = doctor.getFullName();
+            specialty = doctor.getSpecialty();
+        }
+
+        return AppointmentResponseDTO.builder()
+                .id(appointment.getId())
+                .patientId(appointment.getPatientId())
+                .doctorId(appointment.getDoctorId())
+                .startTime(appointment.getStartTime())
+                .endTime(appointment.getEndTime())
+                .status(appointment.getStatus().name())
+                .cancellationReason(appointment.getCancellationReason())
+                .patientName(patientName)
+                .doctorName(doctorName)
+                .specialty(specialty)
+                .build();
+    }
+
+    @Override
+    public AppointmentResponseDTO mapToDTO(Appointment appointment) {
+        String patientName = patientRepository.findById(appointment.getPatientId())
+                .map(Patient::getFullName)
+                .orElse("Paciente Desconocido");
+
+        String doctorName = "No asignado";
+        String specialty = "Sin especialidad";
+
+        Doctor doctor = doctorRepository.findById(appointment.getDoctorId()).orElse(null);
+        if (doctor != null) {
+            doctorName = doctor.getFullName();
+            specialty = doctor.getSpecialty();
+        }
+
+        return AppointmentResponseDTO.builder()
+                .id(appointment.getId())
+                .consultationId(appointment.getConsultation() != null ? appointment.getConsultation().getId() : null)
+                .patientId(appointment.getPatientId())
+                .doctorId(appointment.getDoctorId())
+                .startTime(appointment.getStartTime())
+                .endTime(appointment.getEndTime())
+                .status(appointment.getStatus().name())
+                .cancellationReason(appointment.getCancellationReason())
+                .patientName(patientName)
+                .doctorName(doctorName)
+                .specialty(specialty)
+                .build();
     }
 }

@@ -37,6 +37,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                        @Param("startTime") OffsetDateTime startTime,
                                        @Param("endTime") OffsetDateTime endTime);
 
+    // Check if the patient has any overlapping appointments
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Appointment a " +
+            "WHERE a.patientId = :patientId " +
+            "AND a.startTime < :endTime " +
+            "AND a.endTime > :startTime " +
+            "AND a.status != com.sena.backend.domain.AppointmentStatus.CANCELED")
+    boolean hasPatientOverlappingAppointments(@Param("patientId") Long patientId,
+                                              @Param("startTime") OffsetDateTime startTime,
+                                              @Param("endTime") OffsetDateTime endTime);
+
     List<Appointment> findByStatusAndStartTimeBetween(AppointmentStatus status, OffsetDateTime start, OffsetDateTime end);
 
     // Fetch all appointments matching a specific status

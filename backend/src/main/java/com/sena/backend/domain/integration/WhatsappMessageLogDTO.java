@@ -11,4 +11,6 @@ public class WhatsappMessageLogDTO {
     private String phoneNumber;
     private String messageBody;
     private OffsetDateTime receivedAt;
+    private String patientName;
+    private String specialty;
 }

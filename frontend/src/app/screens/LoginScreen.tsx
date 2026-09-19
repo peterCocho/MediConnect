@@ -141,7 +141,7 @@ export function LoginScreen() {
                 disabled={isLoading}
                 className="mt-2 w-full rounded-lg bg-[#2C7A7B] py-3 text-base font-medium text-white transition-colors hover:bg-[#256d6f] disabled:opacity-60 md:py-3.5"
               >
-                {isLoading ? 'Iniciando sesión...' : 'Iniciando sesión'}
+                {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
               </button>
             </form>
 

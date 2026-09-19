@@ -1,4 +1,4 @@
-import { Bell, LogOut, X } from 'lucide-react';
+import { Bell, LogOut, X, MessageSquareText, CalendarClock, AlertTriangle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import api from '../../service/api';
@@ -11,11 +11,12 @@ interface HeaderProps {
 }
 
 type AlertItem = {
-  id: number;
+  id: number | string;
   title: string;
   subtitle: string;
   path: string;
   actionLabel: string;
+  kind: 'MESSAGE' | 'APPOINTMENT' | 'ERROR';
 };
 
 type SearchRoute = {
@@ -80,46 +81,84 @@ export function Header({ user, onLogout }: HeaderProps) {
         setIsLoadingAlerts(true);
 
         if (user.role === 'RECEPTIONIST') {
-          const response = await api.get('/api/whatsapp/messages/unread');
-          const items = (response.data ?? []).slice(0, 5).map((message: any) => ({
-            id: message.id,
-            title: 'Mensaje nuevo de WhatsApp',
-            subtitle: `${message.phoneNumber} · ${new Date(message.receivedAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`,
-            path: '/notificaciones',
-            actionLabel: 'Ver notificaciones',
-          }));
+          const [messagesResponse, errorsResponse] = await Promise.allSettled([
+            api.get('/api/whatsapp/messages/unread'),
+            api.get('/api/errors/count'),
+          ]);
+
+          const unreadMessages = messagesResponse.status === 'fulfilled' ? (messagesResponse.value.data ?? []) : [];
+          const errorCount = errorsResponse.status === 'fulfilled' ? (errorsResponse.value.data?.count ?? 0) : 0;
+
+          const items = [
+            ...unreadMessages.slice(0, 5).map((message: any) => ({
+              id: `message-${message.id}`,
+              title: 'Mensaje nuevo de WhatsApp',
+              subtitle: `${message.phoneNumber} · ${new Date(message.receivedAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`,
+              path: '/notificaciones',
+              actionLabel: 'Ver notificaciones',
+              kind: 'MESSAGE' as const,
+            })),
+            ...(errorCount > 0 ? [{
+              id: 'system-errors',
+              title: errorCount === 1 ? 'Hay 1 error del sistema' : `Hay ${errorCount} errores del sistema`,
+              subtitle: 'Revisa el centro de alertas de notificaciones',
+              path: '/notificaciones',
+              actionLabel: 'Ver notificaciones',
+              kind: 'ERROR' as const,
+            }] : []),
+          ];
+
           setAlertItems(items);
           return;
-        };
-
+        }
 
         const isToday = (date: string) => {
-      const consultationDate = new Date(date);
-      const today = new Date();
-      return (
-        consultationDate.getFullYear() === today.getFullYear() &&
-        consultationDate.getMonth() === today.getMonth() &&
-        consultationDate.getDate() === today.getDate()
-      );
-    };
+          const consultationDate = new Date(date);
+          const today = new Date();
+          return (
+            consultationDate.getFullYear() === today.getFullYear() &&
+            consultationDate.getMonth() === today.getMonth() &&
+            consultationDate.getDate() === today.getDate()
+          );
+        };
 
-        const response = await api.get('/api/consultations', {
-          params: { page: 0, size: 20, sort: 'consultationDate,desc' },
-        });
+        const [consultationsResponse, errorsResponse] = await Promise.allSettled([
+          api.get('/api/consultations', {
+            params: { page: 0, size: 20, sort: 'consultationDate,desc' },
+          }),
+          api.get('/api/errors/count'),
+        ]);
 
-        const items = (response.data?.content ?? [])
-          .filter((consultation: any) =>
-            consultation.status === 'SCHEDULED' &&
-            isToday(consultation.consultationDate),
-          )
-          .slice(0, 5)
-          .map((consultation: any) => ({
-            id: consultation.id,
-            title: consultation.fullName ? `Paciente: ${consultation.fullName}` : 'Consulta de hoy',
-            subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })} · ${translateStatus(consultation.status)}`,
-            path: '/mi-agenda',
-            actionLabel: 'Ir a mi agenda',
-          }));
+        const consultationItems = consultationsResponse.status === 'fulfilled'
+          ? (consultationsResponse.value.data?.content ?? [])
+              .filter((consultation: any) =>
+                consultation.status === 'SCHEDULED' &&
+                isToday(consultation.consultationDate),
+              )
+              .slice(0, 5)
+              .map((consultation: any) => ({
+                id: `consultation-${consultation.id}`,
+                title: consultation.fullName ? `Paciente: ${consultation.fullName}` : 'Consulta de hoy',
+                subtitle: `${new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })} · ${translateStatus(consultation.status)}`,
+                path: '/mi-agenda',
+                actionLabel: 'Ir a mi agenda',
+                kind: 'APPOINTMENT' as const,
+              }))
+          : [];
+
+        const errorCount = errorsResponse.status === 'fulfilled' ? (errorsResponse.value.data?.count ?? 0) : 0;
+
+        const items = [
+          ...consultationItems,
+          ...(errorCount > 0 ? [{
+            id: 'system-errors',
+            title: errorCount === 1 ? 'Hay 1 error del sistema' : `Hay ${errorCount} errores del sistema`,
+            subtitle: 'Revisa el centro de alertas de notificaciones',
+            path: '/notificaciones',
+            actionLabel: 'Ver notificaciones',
+            kind: 'ERROR' as const,
+          }] : []),
+        ];
 
         setAlertItems(items);
       } catch (error) {
@@ -299,20 +338,47 @@ export function Header({ user, onLogout }: HeaderProps) {
             <p className="text-sm text-[#64748B]">No hay notificaciones nuevas.</p>
           ) : (
             <div className="space-y-2">
-              {alertItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    navigate(item.path);
-                    setIsAlertOpen(false);
-                  }}
-                  className="w-full rounded-lg bg-[#F8FAFC] p-3 text-left hover:bg-[#F1F5F9]"
-                >
-                  <div className="text-sm font-medium text-[#1E293B]">{item.title}</div>
-                  <div className="mt-1 text-xs text-[#64748B]">{item.subtitle}</div>
-                </button>
-              ))}
+              {alertItems.map((item) => {
+                const itemStyles = {
+                  MESSAGE: {
+                    container: 'border-[#DCFCE7] bg-[#F0FDF4]',
+                    icon: 'bg-[#22C55E] text-white',
+                    iconElement: MessageSquareText,
+                  },
+                  APPOINTMENT: {
+                    container: 'border-[#FEF3C7] bg-[#FFFBEB]',
+                    icon: 'bg-[#F59E0B] text-white',
+                    iconElement: CalendarClock,
+                  },
+                  ERROR: {
+                    container: 'border-[#FECACA] bg-[#FEF2F2]',
+                    icon: 'bg-[#EF4444] text-white',
+                    iconElement: AlertTriangle,
+                  },
+                }[item.kind];
+
+                const Icon = itemStyles.iconElement;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      navigate(item.path);
+                      setIsAlertOpen(false);
+                    }}
+                    className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition hover:bg-white ${itemStyles.container}`}
+                  >
+                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${itemStyles.icon}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-[#1E293B]">{item.title}</div>
+                      <div className="mt-1 text-xs text-[#64748B]">{item.subtitle}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

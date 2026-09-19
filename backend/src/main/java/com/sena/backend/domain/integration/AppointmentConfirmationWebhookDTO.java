@@ -12,4 +12,6 @@ public class AppointmentConfirmationWebhookDTO {
     private String patientPhone;
     private String patientName;
     private OffsetDateTime appointmentDate;
+    private String doctorName; // Nuevo campo
+    private String specialty;
 }

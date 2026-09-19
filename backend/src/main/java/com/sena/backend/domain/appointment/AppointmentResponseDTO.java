@@ -16,5 +16,9 @@ public class AppointmentResponseDTO {
     private String status;
     private String cancellationReason;
 
+    private String patientName;
+    private String doctorName;
+    private String specialty;
+
     // Omitted fields: version, createdAt, updatedAt, notes (unless strictly required by the UI)
 }

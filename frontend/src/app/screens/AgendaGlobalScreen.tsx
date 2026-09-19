@@ -1,4 +1,4 @@
-import { Calendar, Clock, User, Loader2, ChevronLeft, ChevronRight, XCircle, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, User, Loader2, ChevronLeft, ChevronRight, XCircle, X, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../service/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,9 @@ type AppointmentRow = {
   startTime: string;
   endTime: string;
   status: string;
+  patientName: string;
+  doctorName: string;
+  specialty: string;
 };
 
 export function AgendaGlobalScreen() {
@@ -25,6 +28,20 @@ export function AgendaGlobalScreen() {
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [appointmentToCancel, setAppointmentToCancel] = useState<AppointmentRow | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+
+  const handleConfirmAppointment = async (id: number) => {
+    try {
+      setConfirmingId(id);
+      setError('');
+      await api.patch(`/api/appointments/${id}/confirm`);
+      await fetchAgenda(page);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'No se pudo confirmar la cita.');
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   const fetchAgenda = async (nextPage = 0) => {
     try {
@@ -185,43 +202,77 @@ export function AgendaGlobalScreen() {
                       const canCancel = canCancelAppointments && (cita.status === 'PENDING_CONFIRMATION' || cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED');
 
                       return (
-                        <tr key={cita.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
-                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">
-                            <span>{fechaTexto}</span>
-                          </td>
-                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">
-                            <span>{hora}</span>
-                            
-                          </td>
-                          
-                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Paciente">
-                            Paciente ID: {cita.patientId}
-                          </td>
-                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Médico">
-                            Médico ID: {cita.doctorId}
-                          </td>
-                          <td className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Estado">
-                            <div className="flex items-center gap-3">
-                              <span className={`inline-flex items-center gap-2 text-sm ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
-                                <span className={`h-2 w-2 rounded-full ${cita.status === 'SCHEDULED' || cita.status === 'CONFIRMED' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} />
-                                {translateStatus(cita.status)}
-                              </span>
-                              {canCancel && (
-                                <button
-                                  type="button"
-                                  onClick={() => openCancellationModal(cita)}
-                                  disabled={cancellingId === cita.id}
-                                  className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                  title="Cancelar cita"
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                  {cancellingId === cita.id ? 'Cancelando...' : 'Cancelar'}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
+												<tr
+													key={cita.id}
+													className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
+													<td
+														className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+														data-label="Fecha">
+														<span>{fechaTexto}</span>
+													</td>
+													<td
+														className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm font-medium text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+														data-label="Hora">
+														<span>{hora}</span>
+													</td>
+													<td
+														className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+														data-label="Paciente">
+														{cita.patientName}
+													</td>
+													<td
+														className="flex flex-col justify-center px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] before:mb-1 md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+														data-label="Médico">
+														<span className="block font-semibold text-[#2C7A7B]">
+															{cita.specialty}
+														</span>
+														<span className="block text-xs text-gray-500">
+															{cita.doctorName}
+														</span>
+													</td>
+													<td
+														className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+														data-label="Estado">
+														<div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
+															<span
+																className={`inline-flex items-center gap-2 text-sm ${cita.status === "SCHEDULED" || cita.status === "CONFIRMED" ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
+																<span
+																	className={`h-2 w-2 rounded-full ${cita.status === "SCHEDULED" || cita.status === "CONFIRMED" ? "bg-[#10B981]" : "bg-[#F59E0B]"}`}
+																/>
+																{translateStatus(cita.status)}
+															</span>
+
+                                                            {/* Botón de Confirmar */}
+                                                            {cita.status === 'PENDING_CONFIRMATION' && canCancelAppointments && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleConfirmAppointment(cita.id)}
+                                                                    disabled={confirmingId === cita.id}
+                                                                    className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                                                    title="Confirmar cita">
+                                                                    <CheckCircle2 className="h-4 w-4" />
+                                                                    {confirmingId === cita.id ? 'Confirmando...' : 'Confirmar'}
+                                                                </button>
+                                                            )}
+
+															{/* Botón de Cancelar */}
+															{canCancelAppointments && (
+																<button
+																	type="button"
+																	onClick={() => openCancellationModal(cita)}
+																	disabled={cancellingId === cita.id}
+																	className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+																	title="Cancelar cita">
+																	<XCircle className="h-4 w-4" />
+																	{cancellingId === cita.id
+																		? "Cancelando..."
+																		: "Cancelar"}
+																</button>
+															)}
+														</div>
+													</td>
+												</tr>
+											);
                     })
                   )}
                 </tbody>

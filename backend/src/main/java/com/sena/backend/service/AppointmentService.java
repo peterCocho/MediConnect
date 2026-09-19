@@ -1,6 +1,7 @@
 package com.sena.backend.service;
 
 import com.sena.backend.domain.AppointmentStatus;
+import com.sena.backend.domain.appointment.AppointmentResponseDTO;
 import com.sena.backend.entity.Appointment;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -27,4 +28,12 @@ public interface AppointmentService {
     Appointment confirmAppointment(Long appointmentId);
 
     List<Appointment> getAppointmentsByStatus(AppointmentStatus status);
+
+    List<AppointmentResponseDTO> getPendingAppointmentsEnriched();
+
+    // ... tus otros métodos ...
+
+    AppointmentResponseDTO mapToDTO(Appointment appointment);
+
+
 }
