@@ -14,6 +14,14 @@ type ConsultationForm = {
   managementPlan: string;
 };
 
+// Se define el tipo para manejar las plantillas que llegan del backend
+type ClinicalTemplate = {
+  id: number;
+  name: string;
+  description: string;
+  templateContent: string;
+};
+
 const emptyForm: ConsultationForm = {
   systolicPressure: '',
   diastolicPressure: '',
@@ -29,6 +37,7 @@ export function ConsultaScreen() {
   const [searchParams] = useSearchParams();
   const consultationId = searchParams.get('consultationId');
   const [form, setForm] = useState<ConsultationForm>(emptyForm);
+  const [templates, setTemplates] = useState<ClinicalTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -36,6 +45,7 @@ export function ConsultaScreen() {
 
   const title = useMemo(() => (consultationId ? `Consulta #${consultationId}` : 'Consulta Médica'), [consultationId]);
 
+  // Carga inicial de la consulta
   useEffect(() => {
     const loadConsultation = async () => {
       if (!consultationId) {
@@ -70,8 +80,41 @@ export function ConsultaScreen() {
     loadConsultation();
   }, [consultationId]);
 
+  // Carga independiente de las plantillas activas
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const response = await api.get('/api/templates/active');
+        setTemplates(response.data || []);
+      } catch (err) {
+        console.error('Error al cargar las plantillas clínicas:', err);
+      }
+    };
+
+    loadTemplates();
+  }, []);
+
   const handleChange = (field: keyof ConsultationForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  // Función para inyectar la plantilla seleccionada en las notas clínicas
+  const handleTemplateSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const templateId = Number(event.target.value);
+    if (!templateId) return;
+
+    const selectedTemplate = templates.find((t) => t.id === templateId);
+    if (selectedTemplate && selectedTemplate.templateContent) {
+      setForm((current) => {
+        const newNotes = current.clinicalNotes.trim()
+          ? `${current.clinicalNotes}\n\n${selectedTemplate.templateContent}`
+          : selectedTemplate.templateContent;
+        return { ...current, clinicalNotes: newNotes };
+      });
+    }
+
+    // Reinicia el selector para permitir inyectar la misma plantilla otra vez si se requiere
+    event.target.value = '';
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -165,9 +208,26 @@ export function ConsultaScreen() {
               <textarea value={form.reasonForVisit} onChange={(event) => handleChange('reasonForVisit', event.target.value)} rows={4} placeholder="Describa el motivo de la atención..." className="w-full resize-none rounded-md border-[1.5px] border-[#94A3B8] bg-[#F8FAFC] px-4 py-3 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none" />
             </div>
 
+            {/* Bloque actualizado de notas clínicas con selector de plantillas */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-[#64748B]">Notas clínicas</label>
-              <textarea value={form.clinicalNotes} onChange={(event) => handleChange('clinicalNotes', event.target.value)} rows={6} placeholder="Hallazgos, evolución, análisis clínico..." className="w-full resize-none rounded-md border-[1.5px] border-[#94A3B8] bg-[#F8FAFC] px-4 py-3 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none" />
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-medium text-[#64748B]">Notas clínicas</label>
+                {templates.length > 0 && (
+                  <select
+                    onChange={handleTemplateSelect}
+                    defaultValue=""
+                    className="cursor-pointer rounded-md border border-[#CBD5E1] bg-white px-3 py-1.5 text-sm font-medium text-[#2C7A7B] outline-none transition-colors hover:bg-slate-50 focus:border-[#2C7A7B] focus:ring-1 focus:ring-[#2C7A7B]"
+                  >
+                    <option value="" disabled>+ Insertar plantilla</option>
+                    {templates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <textarea value={form.clinicalNotes} onChange={(event) => handleChange('clinicalNotes', event.target.value)} rows={8} placeholder="Hallazgos, evolución, análisis clínico..." className="w-full resize-none rounded-md border-[1.5px] border-[#94A3B8] bg-[#F8FAFC] px-4 py-3 text-[#1E293B] focus:border-[#2C7A7B] focus:outline-none" />
             </div>
 
             <div>

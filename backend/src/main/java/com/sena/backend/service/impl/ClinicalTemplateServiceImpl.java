@@ -73,4 +73,28 @@ public class ClinicalTemplateServiceImpl implements ClinicalTemplateService {
                 .isActive(entity.getIsActive())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public ClinicalTemplateResponseDTO updateTemplate(Long id, ClinicalTemplateRequestDTO request) {
+        ClinicalTemplate template = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+
+        template.setName(request.getName());
+        template.setDescription(request.getDescription());
+        template.setTemplateContent(request.getTemplate());
+
+        ClinicalTemplate updated = repository.save(template);
+        return mapToResponse(updated);
+    }
+
+    @Override
+    @Transactional
+    public ClinicalTemplateResponseDTO activateTemplate(Long id) {
+        ClinicalTemplate template = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        template.setIsActive(true);
+        ClinicalTemplate updated = repository.save(template);
+        return mapToResponse(updated);
+    }
 }

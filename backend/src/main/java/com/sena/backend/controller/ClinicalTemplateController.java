@@ -45,4 +45,19 @@ public class ClinicalTemplateController {
         templateService.deactivateTemplate(id);
         return ResponseEntity.noContent().build();
     }
+
+
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> activateTemplate(@PathVariable Long id) {
+        templateService.activateTemplate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ClinicalTemplateResponseDTO> updateTemplate(@PathVariable Long id,
+            @Valid @RequestBody ClinicalTemplateRequestDTO request) {
+        return ResponseEntity.ok(templateService.updateTemplate(id, request));
+    }
 }
