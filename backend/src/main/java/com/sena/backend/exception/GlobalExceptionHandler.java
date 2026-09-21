@@ -83,4 +83,10 @@ public class GlobalExceptionHandler {
             return fieldErrors;
         }
     }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        ErrorResponseDTO body = new ErrorResponseDTO("El formato de los datos enviados es incorrecto. Verifique las fechas.", OffsetDateTime.now(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
 }

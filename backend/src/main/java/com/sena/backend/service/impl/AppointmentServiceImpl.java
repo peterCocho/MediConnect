@@ -54,6 +54,27 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public Appointment bookAppointment(Long patientId, Long doctorId, OffsetDateTime start, OffsetDateTime end) {
+
+        java.time.ZoneId clinicZone = java.time.ZoneId.of("America/Bogota");
+        java.time.ZonedDateTime startBogota = start.atZoneSameInstant(clinicZone);
+        java.time.ZonedDateTime endBogota = end.atZoneSameInstant(clinicZone);
+
+        // 2. Validar que no sea domingo (según el calendario de la clínica)
+        if (startBogota.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+            throw new BusinessRuleException("No se puede agendar: La clínica no ofrece atención los días domingo.");
+        }
+
+        // 3. Validar horario de atención estricto (08:00 AM a 6:00 PM en Colombia)
+        java.time.LocalTime startTime = startBogota.toLocalTime();
+        java.time.LocalTime endTime = endBogota.toLocalTime();
+
+        java.time.LocalTime openingTime = java.time.LocalTime.of(8, 0);  // 08:00 AM
+        java.time.LocalTime closingTime = java.time.LocalTime.of(18, 0); // 18:00 PM (6:00 PM)
+
+        if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
+            throw new BusinessRuleException("No se puede agendar: El horario está fuera de la jornada de atención (8:00 AM a 6:00 PM).");
+        }
+
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con id: " + patientId));
 

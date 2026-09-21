@@ -27,6 +27,15 @@ type AppointmentRow = {
 	specialty: string;
 };
 
+// Define specific colors for each status to avoid binary ternary operators
+const statusColors: Record<string, { text: string; bg: string }> = {
+	SCHEDULED: { text: "text-[#10B981]", bg: "bg-[#10B981]" }, // Green
+	CONFIRMED: { text: "text-[#10B981]", bg: "bg-[#10B981]" }, // Green
+	PENDING_CONFIRMATION: { text: "text-[#F59E0B]", bg: "bg-[#F59E0B]" }, // Amber
+	CANCELED: { text: "text-[#EF4444]", bg: "bg-[#EF4444]" }, // Red
+	COMPLETED: { text: "text-[#3B82F6]", bg: "bg-[#3B82F6]" }, // Blue
+};
+
 export function AgendaGlobalScreen() {
 	const { user } = useAuth();
 	const [citasGlobal, setCitasGlobal] = useState<AppointmentRow[]>([]);
@@ -99,8 +108,7 @@ export function AgendaGlobalScreen() {
 	}, []);
 
 	const openCancellationModal = (appointment: AppointmentRow) => {
-    setAppointmentToCancel(appointment);
-    console.log(appointment);
+		setAppointmentToCancel(appointment);
 		setCancellationReason("");
 		setError("");
 	};
@@ -128,8 +136,7 @@ export function AgendaGlobalScreen() {
 			});
 			setAppointmentToCancel(null);
 			setCancellationReason("");
-      await fetchAgenda(page);
-      
+			await fetchAgenda(page);
 		} catch (err: any) {
 			setError(err?.response?.data?.message || "No se pudo cancelar la cita.");
 		} finally {
@@ -142,12 +149,10 @@ export function AgendaGlobalScreen() {
 	).length;
 	const pendingCount = allCitas.filter(
 		(cita) => cita.status === "PENDING_CONFIRMATION",
-  ).length;
-  
+	).length;
 
 	const totalCount = totalCitas;
 	const canCancelAppointments = user?.role === "RECEPTIONIST";
-
 
 	return (
 		<div className="min-h-screen bg-[#F4F7F9] p-4 sm:p-6 lg:p-8">
@@ -267,6 +272,9 @@ export function AgendaGlobalScreen() {
 												(cita.status === "PENDING_CONFIRMATION" ||
 													cita.status === "SCHEDULED" ||
 													cita.status === "CONFIRMED");
+                                            
+                                            // Fallback default style to gray if status is unrecognized
+                                            const currentStyle = statusColors[cita.status] || { text: "text-[#64748B]", bg: "bg-[#64748B]" };
 
 											return (
 												<tr
@@ -301,11 +309,9 @@ export function AgendaGlobalScreen() {
 														className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
 														data-label="Estado">
 														<div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
-															<span
-																className={`inline-flex items-center gap-2 text-sm ${cita.status === "SCHEDULED" || cita.status === "CONFIRMED" ? "text-[#10B981]" : "text-[#F59E0B]"}`}>
-																<span
-																	className={`h-2 w-2 rounded-full ${cita.status === "SCHEDULED" || cita.status === "CONFIRMED" ? "bg-[#10B981]" : "bg-[#F59E0B]"}`}
-																/>
+															
+                                                            <span className={`inline-flex items-center gap-2 text-sm ${currentStyle.text}`}>
+																<span className={`h-2 w-2 rounded-full ${currentStyle.bg}`} />
 																{translateStatus(cita.status)}
 															</span>
 
@@ -328,7 +334,7 @@ export function AgendaGlobalScreen() {
 																)}
 
 															{/* Botón de Cancelar */}
-															{cita.status !== "CANCELED" && canCancelAppointments && (
+															{cita.status !== "CANCELED" && cita.status !== "COMPLETED" && canCancelAppointments && (
 																<button
 																	type="button"
 																	onClick={() => openCancellationModal(cita)}
@@ -338,7 +344,7 @@ export function AgendaGlobalScreen() {
 																	<XCircle className="h-4 w-4" />
 																	{cancellingId === cita.id
 																		? "Cancelando..."
-                                    : "Cancelar"}
+																		: "Cancelar"}
 																</button>
 															)}
 														</div>

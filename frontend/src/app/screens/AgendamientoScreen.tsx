@@ -21,14 +21,11 @@ type AppointmentForm = {
 };
 
 const toLocalOffsetISOString = (date: Date) => {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  const offsetMinutes = date.getTimezoneOffset();
-  const sign = offsetMinutes <= 0 ? '+' : '-';
-  const absoluteOffset = Math.abs(offsetMinutes);
-  const offsetHours = Math.floor(absoluteOffset / 60);
-  const offsetRemainder = absoluteOffset % 60;
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${pad(offsetHours)}:${pad(offsetRemainder)}`;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const off = date.getTimezoneOffset();
+  const sign = off > 0 ? '-' : '+';
+  const absOff = Math.abs(off);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00${sign}${pad(Math.floor(absOff / 60))}:${pad(absOff % 60)}`;
 };
 
 const emptyForm: AppointmentForm = {
@@ -92,42 +89,45 @@ export function AgendamientoScreen() {
         throw new Error('Debe completar paciente, médico, fecha y hora.');
       }
 
-      const start = new Date(`${form.date}T${form.time}`);
-      if (Number.isNaN(start.getTime())) {
+      // 1. Forzamos la zona horaria de Colombia (-05:00) ignorando el reloj de Windows
+      const startIso = `${form.date}T${form.time}:00-05:00`;
+
+      const
+          startDateObj = new Date(startIso);
+      if (Number.isNaN(startDateObj.getTime())) {
         throw new Error('La fecha y hora seleccionadas no son válidas.');
       }
 
-      const end = new Date(start.getTime() + 60 * 60 * 1000);
+      // 2. Calculamos la hora de fin (1 hora de duración)
+      const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+
+      // 3. Extraemos de forma segura la nueva hora manteniendo el formato de Colombia
+      const endIsoStringLocal = endDateObj.toLocaleString('sv-SE', { timeZone: 'America/Bogota' }).replace(' ', 'T');
+      const endIso = `${endIsoStringLocal}-05:00`;
 
       await api.post('/api/appointments/book', {
         patientId: Number(form.patientId),
         doctorId: Number(form.doctorId),
-        startTime: toLocalOffsetISOString(start),
-        endTime: toLocalOffsetISOString(end),
+        startTime: startIso,
+        endTime: endIso,
       });
 
       setSuccess('Cita agendada correctamente. La cita queda pendiente de confirmación por WhatsApp.');
       setForm(emptyForm);
       setSubmitting(false);
-} catch (err: any) {
-      // ELIMINAMOS el bloque que atrapaba el status 409 a ciegas para dejar pasar el mensaje real del backend
-
-      // Extraer estructura exacta de ValidationErrorResponseDTO o ErrorResponseDTO
+    } catch (err: any) {
       if (err?.response?.data) {
         const data = err.response.data;
         if (data.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
           const firstError = Object.values(data.fieldErrors)[0] as string;
           setError(`Validación: ${firstError}`);
         } else {
-          // Aquí se mostrará exactamente "No se puede agendar: El paciente se encuentra inactivo." 
-          // o "El médico seleccionado ya tiene una cita..." si el backend envía ese mensaje en el 409.
           setError(data.message || 'No se pudo agendar la cita.');
-          setSubmitting(false);
         }
       } else {
         setError(err?.message || 'Error de conexión con el servidor.');
-        setSubmitting(false);
       }
+      setSubmitting(false);
     }
   };
 

@@ -51,4 +51,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Fetch all appointments matching a specific status
     List<Appointment> findByStatus(AppointmentStatus status);
+
+    List<Appointment> findByStatusAndStartTimeBefore(AppointmentStatus status, OffsetDateTime deadline);
+
 }
