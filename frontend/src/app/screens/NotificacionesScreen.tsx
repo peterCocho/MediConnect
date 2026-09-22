@@ -116,10 +116,10 @@ export function NotificacionesScreen() {
 				{/* Unread Messages Card */}
 				<div
 					onClick={() => setActiveTab("UNREAD")}
-					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "UNREAD" ? "border-[#10B981] ring-2 ring-[#10B981] ring-opacity-20 bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
+					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "UNREAD" ? "border-[#2C7A7B] ring-2 ring-[#8CD6D1] bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
 					<div className="mb-4 flex items-center justify-between">
-						<div className="rounded-lg bg-[#10B981] bg-opacity-20 p-3">
-							<CheckCircle className="h-6 w-6 text-[#10B981]" />
+						<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100">
+							<CheckCircle className="h-6 w-6 text-emerald-600" />
 						</div>
 					</div>
 					<h3 className="mb-1 text-3xl font-bold text-[#1E293B]">
@@ -131,10 +131,10 @@ export function NotificacionesScreen() {
 				{/* Pending Appointments Card */}
 				<div
 					onClick={() => setActiveTab("PENDING")}
-					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "PENDING" ? "border-[#F59E0B] ring-2 ring-[#F59E0B] ring-opacity-20 bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
+					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "PENDING" ? "border-[#2C7A7B] ring-2 ring-[#8CD6D1] bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
 					<div className="mb-4 flex items-center justify-between">
-						<div className="rounded-lg bg-[#F59E0B] bg-opacity-20 p-3">
-							<Clock className="h-6 w-6 text-[#F59E0B]" />
+						<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100">
+							<Clock className="h-6 w-6 text-amber-600" />
 						</div>
 					</div>
 					<h3 className="mb-1 text-3xl font-bold text-[#1E293B]">
@@ -146,10 +146,10 @@ export function NotificacionesScreen() {
 				{/* System Errors Card */}
 				<div
 					onClick={() => setActiveTab("ERRORS")}
-					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "ERRORS" ? "border-[#EF4444] ring-2 ring-[#EF4444] ring-opacity-20 bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
+					className={`cursor-pointer rounded-xl border p-6 shadow-sm transition-all ${activeTab === "ERRORS" ? "border-[#2C7A7B] ring-2 ring-[#8CD6D1] bg-white" : "border-[#E2E8F0] bg-white hover:bg-gray-50"}`}>
 					<div className="mb-4 flex items-center justify-between">
-						<div className="rounded-lg bg-[#EF4444] bg-opacity-20 p-3">
-							<XCircle className="h-6 w-6 text-[#EF4444]" />
+						<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100">
+							<XCircle className="h-6 w-6 text-red-600" />
 						</div>
 					</div>
 					<h3 className="mb-1 text-3xl font-bold text-[#1E293B]">
@@ -220,7 +220,6 @@ export function NotificacionesScreen() {
 														<span className="mr-2 text-xs text-gray-500">
 															{m.phoneNumber}
 														</span>
-														<CopyButton text={m.phoneNumber} />
 													</div>
 												</td>
 												<td

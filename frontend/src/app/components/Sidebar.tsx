@@ -166,12 +166,19 @@ export function Sidebar({
   return (
     <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-[#455A73] text-white flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${isOpen ? 'lg:translate-x-0' : ''}`}>
       <div className="border-b border-[#334155] p-4 md:p-6">
-        <div className="flex items-center justify-center gap-2 md:justify-start">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8CD6D1]">
+        <button 
+          type="button"
+          onClick={() => {
+            onNavigate("dashboard");
+            if (onClose) onClose();
+          }}
+          className="flex w-full items-center justify-center gap-2 transition-opacity hover:opacity-80 md:justify-start"
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#8CD6D1]">
             <MediConnectBrandIcon className="h-5 w-5 text-[#455A73]" />
           </div>
           <h1 className="text-lg font-bold md:text-xl">MediConnect</h1>
-        </div>
+        </button>
       </div>
 
       <nav className="flex-1 flex flex-col gap-2 overflow-y-auto px-3 py-3 md:px-4 md:py-4">

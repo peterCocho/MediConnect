@@ -13,7 +13,7 @@ type ConsultationRow = {
 
 const getDateKey = (value: string | Date) => {
   const date = value instanceof Date ? value : new Date(value);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return date.toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' });
 };
 
 export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (consultationId: number) => void }) {
@@ -63,10 +63,17 @@ export function MiAgendaScreen({ onIniciarConsulta }: { onIniciarConsulta?: (con
   };
   const defaultColor = { text: 'text-[#64748B]', bg: 'bg-[#64748B]' };
 
-  const formatHour = (value: string) => {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-  };
+const formatHour = (value: string) => {
+	const date = new Date(value);
+	return Number.isNaN(date.getTime())
+		? "—"
+		: date.toLocaleTimeString("es-ES", {
+				hour: "2-digit",
+				minute: "2-digit",
+				hour12: false,
+				timeZone: "America/Bogota",
+			});
+};
 
   if (isLoading) {
     return (

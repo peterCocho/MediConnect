@@ -256,16 +256,18 @@ export function AgendaGlobalScreen() {
 										</tr>
 									) : (
 										citasGlobal.map((cita) => {
-											const fecha = new Date(cita.startTime);
+                      const fecha = new Date(cita.startTime);
 											const hora = fecha.toLocaleTimeString("es-ES", {
 												hour: "2-digit",
 												minute: "2-digit",
 												hour12: false,
+												timeZone: "America/Bogota",
 											});
 											const fechaTexto = fecha.toLocaleDateString("es-ES", {
 												day: "2-digit",
 												month: "2-digit",
 												year: "numeric",
+												timeZone: "America/Bogota",
 											});
 											const canCancel =
 												canCancelAppointments &&

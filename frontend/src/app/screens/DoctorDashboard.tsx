@@ -36,7 +36,7 @@ export function DoctorDashboard() {
         setError('');
 
         const response = await api.get('/api/consultations', {
-          params: { page: 0, size: 1000, sort: 'consultationDate,asc' },
+          params: { page: 0, size: 1000, sort: 'consultationDate,desc' },
         });
 
         setConsultations((response.data?.content ?? []) as DoctorConsultation[]);
@@ -158,12 +158,22 @@ const statusColors: Record<string, { text: string; bg: string }> = {
                         <tr key={consultation.id} className="mb-4 block border-b border-[#E2E8F0] bg-white p-4 shadow-sm hover:bg-[#F8FAFC] md:mb-0 md:table-row md:p-0 md:shadow-none">
                           <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Fecha">
                             {consultation.consultationDate
-                              ? new Date(consultation.consultationDate).toLocaleString('es-ES', { dateStyle: 'short' })
+                              ? new Date(consultation.consultationDate).toLocaleDateString('es-ES', { 
+                                  day: '2-digit', 
+                                  month: '2-digit', 
+                                  year: 'numeric',
+                                  timeZone: 'America/Bogota' 
+                                })
                               : 'Sin fecha'}
                           </td>
                           <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">
                             {consultation.consultationDate
-                              ? new Date(consultation.consultationDate).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
+                              ? new Date(consultation.consultationDate).toLocaleTimeString('es-ES', { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit', 
+                                  hour12: false,
+                                  timeZone: 'America/Bogota' 
+                                })
                               : 'Sin hora'}
                           </td>
                           <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Expediente">

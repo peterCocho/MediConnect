@@ -53,17 +53,30 @@ export function AgendamientoScreen() {
           api.get('/api/users/doctors', { params: { page: 0, size: 100, sortBy: 'id' } }),
         ]);
 
-        setPatients((patientsResponse.data?.content ?? patientsResponse.data ?? []).map((patient: any) => ({
-          id: patient.id,
-          fullName: patient.fullName,
-          identityDocument: patient.identityDocument,
-        })));
+const rawPatients = patientsResponse.data?.content ?? patientsResponse.data ?? [];
+setPatients(
+  rawPatients
+    .filter((patient: any) => patient.active) // Change 'active' to 'status === "ACTIVE"' or your actual DTO property
+    .map((patient: any) => ({
+      id: patient.id,
+      fullName: patient.fullName,
+      identityDocument: patient.identityDocument,
+    }))
+);
 
-        setDoctors((doctorsResponse.data?.content ?? doctorsResponse.data ?? []).map((doctor: any) => ({
-          id: doctor.id,
-          fullName: doctor.fullName,
-          specialty: doctor.specialty,
-        })));
+// Filtering active doctors
+const rawDoctors = doctorsResponse.data?.content ?? doctorsResponse.data ?? [];
+setDoctors(
+  rawDoctors
+    .filter((doctor: any) => doctor.active) // Change 'active' to 'status === "ACTIVE"' or your actual DTO property
+    .map((doctor: any) => ({
+      id: doctor.id,
+      fullName: doctor.fullName,
+      specialty: doctor.specialty,
+    }))
+);
+
+
       } catch (err) {
         setError('No se pudieron cargar los pacientes o médicos disponibles.');
       } finally {
