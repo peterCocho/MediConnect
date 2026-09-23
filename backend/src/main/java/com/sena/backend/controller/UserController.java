@@ -6,6 +6,10 @@ import com.sena.backend.domain.role.AssignRoleRequest;
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
 import com.sena.backend.domain.receptionist.CreateReceptionistRequest;
 import com.sena.backend.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Users", description = "Endpoints for managing system users, doctors, receptionists, and role assignments")
 public class UserController {
 
     private final UserService userService;
@@ -22,6 +27,13 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Create a new doctor", description = "Registers a new doctor and creates their user account. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Doctor successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
+    })
     @PostMapping("/doctors")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> createDoctor(@Valid @RequestBody CreateDoctorRequest req) {
@@ -29,6 +41,13 @@ public class UserController {
         return ResponseEntity.status(201).build();
     }
 
+    @Operation(summary = "Create a new receptionist", description = "Registers a new receptionist and creates their user account. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Receptionist successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
+    })
     @PostMapping("/receptionists")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> createReceptionist(@Valid @RequestBody CreateReceptionistRequest req) {
@@ -36,6 +55,14 @@ public class UserController {
         return ResponseEntity.status(201).build();
     }
 
+    @Operation(summary = "Assign a role", description = "Assigns a specific role to an existing user. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Role successfully assigned"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions"),
+            @ApiResponse(responseCode = "404", description = "User or role not found")
+    })
     @PostMapping("/assign-role")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> assignRole(@Valid @RequestBody AssignRoleRequest req) {
@@ -43,12 +70,27 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get doctor by ID", description = "Retrieves the details of a specific doctor. Accessible by ADMIN and RECEPTIONIST roles.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctor successfully retrieved"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions"),
+            @ApiResponse(responseCode = "404", description = "Doctor not found")
+    })
     @GetMapping("/doctors/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RECEPTION')")
     public ResponseEntity<DoctorResponse> getDoctorById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getDoctorById(id));
     }
 
+    @Operation(summary = "Update a doctor", description = "Updates an existing doctor's details. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Doctor successfully updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions"),
+            @ApiResponse(responseCode = "404", description = "Doctor not found")
+    })
     @PutMapping("/doctors/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> updateDoctor(@PathVariable Long id, @Valid @RequestBody UpdateDoctorRequest req) {
@@ -56,6 +98,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Deactivate a doctor", description = "Soft deletes (deactivates) a doctor's profile. Requires ADMIN role.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Doctor successfully deactivated"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions"),
+            @ApiResponse(responseCode = "404", description = "Doctor not found")
+    })
     @DeleteMapping("/doctors/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deactivateDoctor(@PathVariable Long id) {
@@ -63,6 +112,12 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get all doctors", description = "Retrieves a paginated list of doctors, optionally filtered by name, specialty, or active status. Accessible by ADMIN and RECEPTIONIST roles.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of doctors successfully retrieved"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
+    })
     @GetMapping("/doctors")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RECEPTION')")
     public ResponseEntity<Page<DoctorResponse>> getAllDoctors(
@@ -75,5 +130,4 @@ public class UserController {
     ) {
         return ResponseEntity.ok(userService.getAllDoctors(page, size, sortBy, fullName, specialty, isActive));
     }
-
 }

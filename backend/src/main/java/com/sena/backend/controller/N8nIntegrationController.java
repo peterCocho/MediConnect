@@ -3,6 +3,10 @@ package com.sena.backend.controller;
 import com.sena.backend.domain.integration.N8nErrorWebhookDTO;
 import com.sena.backend.entity.ErrorLog;
 import com.sena.backend.repository.ErrorLogRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +19,18 @@ import java.time.OffsetDateTime;
 @RestController
 @RequestMapping("/api/integrations/errors")
 @RequiredArgsConstructor
+@Tag(name = "Integration - n8n Errors", description = "Endpoints for receiving error webhooks from n8n automation flows")
 public class N8nIntegrationController {
 
     private final ErrorLogRepository errorLogRepository;
 
+    @Operation(summary = "Receive n8n error webhook", description = "Receives error details from n8n workflows, translates them into human-readable messages, and logs them as system errors. Secured by Integration API Key (X-API-Key).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Error webhook successfully received and logged"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - API Key is missing or invalid"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @PostMapping("/webhook-n8n")
     public ResponseEntity<Void> receiveN8nError(@RequestBody N8nErrorWebhookDTO dto) {
         ErrorLog errorLog = new ErrorLog();

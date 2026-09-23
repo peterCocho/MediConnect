@@ -83,10 +83,10 @@ La configuración se encuentra en `backend/src/main/resources/application.yml`. 
 ```text
 DB_URL=jdbc:postgresql://localhost:5432/mediconnect
 DATABASE_USERNAME_P=postgres
-DB_PASSWORD_P=tu_password
+DB_PASSWORD_P=12345
 JWT_SECRET=una_clave_segura
 JWT_EXP_MINUTES=180
-ADMIN_SETUP_PASSWORD=una_clave_segura
+ADMIN_SETUP_PASSWORD=admin123
 N8N_API_KEY=tu_api_key
 N8N_WEBHOOK_URL=tu_webhook
 N8N_WEBHOOK_REMINDER_URL=tu_webhook_de_recordatorio
@@ -94,6 +94,7 @@ EVOLUTION_API_URL=tu_url
 EVOLUTION_API_KEY=tu_api_key
 EVOLUTION_INSTANCE_NAME=tu_instancia
 ```
+El sistema inicializa un usuario administrador por defecto (admin / valor de ADMIN_SETUP_PASSWORD) si la tabla de usuarios está vacía.
 
 El backend utiliza PostgreSQL y Flyway. No elimines Flyway ni cambies el esquema de la base de datos sin actualizar las migraciones correspondientes.
 
@@ -103,7 +104,7 @@ Desde la raíz del repositorio:
 
 ```bash
 cd backend
-mvn spring-boot:run
+mvnw spring-boot:run
 ```
 
 La API queda disponible en:

@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     #Local development configuration
-    url: ${DB_URL:jdbc:postgresql://127.0.0.1:8081/mediconnect?options=-c%20TimeZone=America/Bogota}
-    username: ${DATABASE_USERNAME_P:postgres}
-    password: ${DB_PASSWORD_P:12345}
+    url: ${DB_URL_MC}
+    username: ${DATABASE_USERNAME_P}
+    password: ${DATABASE_PASSWORD_P}
 
     #Railway remote configuration
 #    url: jdbc:postgresql://altaria.proxy.rlwy.net:32649/railway
@@ -74,5 +74,5 @@ n8n:
 evolution:
   api:
     url: ${EVOLUTION_API_URL:http://20.186.24.153:8080}
-    key: ${EVOLUTION_API_KEY:429683C4C977415CAAFCCE10F7D57E11}
-    instance: ${EVOLUTION_INSTANCE_NAME:appointments-mediconnect}
+    key: ${EVOLUTION_API_KEY:Tu_api_key}
+    instance: ${EVOLUTION_INSTANCE_NAME:Tu_instance_name}
