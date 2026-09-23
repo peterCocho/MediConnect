@@ -2,7 +2,18 @@
 
 MediConnect es una plataforma web para la gestión de clínicas médicas. Permite administrar pacientes, usuarios, recepcionistas, citas, consultas clínicas, plantillas, reportes y mensajes de WhatsApp mediante una API protegida con JWT y una interfaz React adaptada por rol.
 
-## Roles
+## 🖼️ Vista previa
+
+| Panel de administrador | Agendamiento de cita clínica |
+| --- | --- |
+| ![Dashboard admin](docs/screenshots/dashboard-admin.gif) | ![Agenda médico](docs/screenshots/nueva-cita.gif) |
+
+| Registro de consulta clínica | Notificaciones de WhatsApp |
+| --- | --- |
+| ![Nueva consulta](docs/screenshots/nueva-consulta.gif) | ![Notificaciones](docs/screenshots/notificaciones-whatsapp.gif) |
+
+
+## 👥 Roles
 
 | Rol | Funciones principales |
 | --- | --- |
@@ -10,7 +21,7 @@ MediConnect es una plataforma web para la gestión de clínicas médicas. Permit
 | Médico | Dashboard clínico, agenda propia, pacientes relacionados, historial y ejecución de consultas |
 | Recepcionista | Registro y gestión de pacientes, agendamiento, citas globales, cancelaciones, mensajes y métricas operativas |
 
-## Tecnologías
+## 🛠️ Tecnologías
 
 ### Backend
 
@@ -37,7 +48,17 @@ MediConnect es una plataforma web para la gestión de clínicas médicas. Permit
 - Lucide React
 - Recharts
 
-## Estructura del proyecto
+## 🤖 Integración con WhatsApp y n8n
+
+La confirmación, cancelación y recordatorio de citas se automatiza mediante n8n, que actúa como orquestador entre el backend y WhatsApp (vía Evolution API, self-hosted). El flujo se compone de tres workflows:
+
+- **Confirmación saliente:** al agendar una cita, el backend llama a un webhook de n8n que envía al paciente un mensaje de WhatsApp con los detalles de la cita y las instrucciones para confirmarla o cancelarla.
+- **Recordatorio saliente:** un proceso programado (cron) en el backend dispara un segundo webhook 24 horas antes de la cita, enviando un recordatorio con la misma lógica de confirmación.
+- **Router entrante:** un webhook escucha los mensajes entrantes de WhatsApp. Al recibir comandos de texto libre como `CONFIRMAR {id}` o `CANCELAR {id}`, identifica la acción solicitada y actualiza el estado de la cita correspondiente mediante la API del backend.
+
+Las URLs, claves y nombres de instancia (tanto de n8n como de Evolution API) deben configurarse mediante variables de entorno y no deben escribirse en el repositorio.
+
+## 📁 Estructura del proyecto
 
 ```text
 MediConnect/
@@ -76,7 +97,7 @@ MediConnect/
 - npm o pnpm
 - PostgreSQL compatible con el esquema del proyecto
 
-## Configuración del backend
+## ⚙️ Configuración del backend
 
 La configuración se encuentra en `backend/src/main/resources/application.yml`. Para evitar credenciales en el código, usa variables de entorno:
 
@@ -98,7 +119,9 @@ El sistema inicializa un usuario administrador por defecto (admin / valor de ADM
 
 El backend utiliza PostgreSQL y Flyway. No elimines Flyway ni cambies el esquema de la base de datos sin actualizar las migraciones correspondientes.
 
-## Ejecutar el backend
+Flyway gestiona el 100% del esquema de base de datos: al levantar la aplicación por primera vez contra una base de datos vacía, ejecuta automáticamente todas las migraciones (`backend/src/main/resources/migration/V1__init.sql` en adelante) en orden, sin necesidad de un script `schema.sql` independiente. No elimines Flyway ni cambies el esquema de la base de datos sin agregar una nueva migración versionada.
+
+## ▶️ Ejecutar el backend
 
 Desde la raíz del repositorio:
 
@@ -120,7 +143,7 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8080/v3/api-docs
 ```
 
-## Configuración y ejecución del frontend
+## 💻 Configuración y ejecución del frontend
 
 La URL base de la API se configura mediante `VITE_API_URL`. En desarrollo, crea `frontend/.env`:
 
@@ -148,7 +171,7 @@ Para generar el build de producción:
 npm run build
 ```
 
-## Autenticación y autorización
+## 🔐 Autenticación y autorización
 
 El login se realiza con:
 
@@ -172,7 +195,7 @@ Authorization: Bearer <token>
 
 El rol del usuario se obtiene del token y controla las rutas y opciones visibles del frontend. Las rutas protegidas redirigen a `/login` cuando no existe una sesión válida y al dashboard correspondiente cuando el rol no tiene permiso.
 
-## Rutas principales del frontend
+## 🧭 Rutas principales del frontend
 
 | Ruta | Acceso |
 | --- | --- |
@@ -190,7 +213,7 @@ El rol del usuario se obtiene del token y controla las rutas y opciones visibles
 | `/historial` | Médico |
 | `/consulta` | Médico |
 
-## Endpoints principales
+## 🔌 Endpoints principales
 
 ### Autenticación
 
@@ -259,7 +282,7 @@ Las respuestas de listados pueden ser paginadas. El frontend debe utilizar los m
 - `GET /api/integrations/patients/lookup`
 - `POST /api/integrations/notifications/status`
 
-## Estados de las citas
+## 📋 Estados de las citas
 
 Los estados se mantienen en inglés en el contrato de la API y se traducen únicamente en la interfaz:
 
@@ -286,16 +309,16 @@ mvn test
 
 Si se usa PostgreSQL local, verifica que el backend pueda conectarse antes de iniciar el frontend. No ejecutes una segunda instancia del backend si el puerto `8080` ya está ocupado.
 
-## Integración con WhatsApp y n8n
-
-La confirmación y cancelación de citas puede integrarse mediante n8n. Las URLs, claves y nombres de instancia deben configurarse mediante variables de entorno y no deben escribirse en el repositorio.
-
-## Seguridad
+## 🛡️ Seguridad
 
 - No subas contraseñas, JWT, claves de n8n ni claves de Evolution API.
 - Usa un `JWT_SECRET` fuerte en entornos distintos de desarrollo.
 - Configura CORS y credenciales según el dominio de despliegue.
 - Mantén las restricciones de rol tanto en el backend como en el frontend. El frontend no sustituye la autorización del backend.
+
+## 🎓 Contexto académico
+
+MediConnect fue desarrollado como proyecto de grado para el Técnico en Programación de Software del SENA (Servicio Nacional de Aprendizaje), cumpliendo con los estándares y competencias exigidos por el programa. El proyecto integra buenas prácticas de arquitectura backend, diseño de interfaces por rol y automatización de procesos mediante servicios externos (n8n, Evolution API), como evidencia de las competencias adquiridas durante la formación.
 
 ## Licencia
 
