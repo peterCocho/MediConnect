@@ -38,14 +38,14 @@ const MediConnectBrandIcon = ({ className = "w-5 h-5 text-[#455A73]" }) => (
   </svg>
 );
 
-// --- ICONOS CORREGIDOS CON ICONIFY ---
-// Usamos 'mdi:doctor' para el doctor
+// --- ICONS UPDATED WITH ICONIFY ---
+// Uses 'mdi:doctor' for doctors
 const DoctorIcon = ({ className }: { className?: string }) => (
   <Icon icon="mdi:doctor" className={className} />
 );
 
-// Usamos 'mdi:headset' para la recepcionista (es el estándar más fiable)
-// Alternativa si prefieres: 'mdi:account-tie' o 'mdi:counter'
+// Uses 'mdi:headset' for receptionists as the most reliable standard
+// Alternatives include 'mdi:account-tie' and 'mdi:counter'
 const ReceptionistIcon = ({ className }: { className?: string }) => (
   <Icon icon="mdi:headset" className={className} />
 );
@@ -73,17 +73,17 @@ const allMenuItems: MenuItem[] = [
     roles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
   },
 
-  // Admin específico
+  // Administrator-specific navigation
   {
     id: "usuarios",
     label: "Doctores",
-    icon: DoctorIcon, // Icono de Doctor
+    icon: DoctorIcon, // Doctor icon
     roles: ["ADMIN"],
   },
   {
     id: "recepcionistas",
     label: "Recepcionistas",
-    icon: ReceptionistIcon, // Icono de Recepcionista (Corregido)
+    icon: ReceptionistIcon, // Receptionist icon
     roles: ["ADMIN"],
   },
   {
@@ -105,7 +105,7 @@ const allMenuItems: MenuItem[] = [
     roles: ["ADMIN"],
   },
 
-  // Doctor específico
+  // Doctor-specific navigation
   {
     id: "mi-agenda",
     label: "Mi Agenda",
@@ -131,7 +131,7 @@ const allMenuItems: MenuItem[] = [
     roles: ["DOCTOR"],
   },
 
-  // Recepcionista específico
+  // Receptionist-specific navigation
   {
     id: "pacientes",
     label: "Pacientes",

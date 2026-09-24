@@ -8,19 +8,19 @@ import { LoginScreen } from './screens/LoginScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { DoctorDashboard } from './screens/DoctorDashboard';
 import { ReceptionistDashboard } from './screens/ReceptionistDashboard';
-import { PacientesScreen } from './screens/PacientesScreen';
-import { UsuariosScreen } from './screens/UsuariosScreen';
-import { RecepcionistasScreen } from './screens/RecepcionistasScreen';
-import { AgendamientoScreen } from './screens/AgendamientoScreen';
-import { HistorialScreen } from './screens/HistorialScreen';
-import { ConsultaScreen } from './screens/ConsultaScreen';
-import { ReportesScreen } from './screens/ReportesScreen';
-import { NotificacionesScreen } from './screens/NotificacionesScreen';
-import { RegistroPacienteScreen } from './screens/RegistroPacienteScreen';
-import { AgendaGlobalScreen } from './screens/AgendaGlobalScreen';
-import { MiAgendaScreen } from './screens/MiAgendaScreen';
-import { MisPacientesScreen } from './screens/MisPacientesScreen';
-import { AdministracionPlantillasScreen } from './screens/AdministracionPlantillasScreen';
+import { PatientsScreen } from './screens/PatientsScreen';
+import { UsersScreen } from './screens/UsersScreen';
+import { ReceptionistsScreen } from './screens/ReceptionistsScreen';
+import { AppointmentBookingScreen } from './screens/AppointmentBookingScreen';
+import { MedicalHistoryScreen } from './screens/MedicalHistoryScreen';
+import { ConsultationScreen } from './screens/ConsultationScreen';
+import { ReportsScreen } from './screens/ReportsScreen';
+import { NotificationsScreen } from './screens/NotificationsScreen';
+import { PatientRegistrationScreen } from './screens/PatientRegistrationScreen';
+import { GlobalScheduleScreen } from './screens/GlobalScheduleScreen';
+import { MyScheduleScreen } from './screens/MyScheduleScreen';
+import { MyPatientsScreen } from './screens/MyPatientsScreen';
+import { TemplateManagementScreen } from './screens/TemplateManagementScreen';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { UserRole } from './types/user';
 
@@ -95,16 +95,16 @@ function PatientsRoute() {
   const navigate = useNavigate();
 
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'RECEPTIONIST') return <PacientesScreen />;
+  if (user.role === 'RECEPTIONIST') return <PatientsScreen />;
   if (user.role === 'DOCTOR') {
-    return <MisPacientesScreen onVerHistorial={(medicalRecordId) => navigate(`/historial?medicalRecordId=${medicalRecordId}`)} />;
+    return <MyPatientsScreen onVerHistorial={(medicalRecordId) => navigate(`/historial?medicalRecordId=${medicalRecordId}`)} />;
   }
   return <Navigate to="/dashboard" replace />;
 }
 
 function DoctorAgendaRoute() {
   const navigate = useNavigate();
-  return <MiAgendaScreen onIniciarConsulta={(consultationId) => navigate(`/consulta?consultationId=${consultationId}`)} />;
+  return <MyScheduleScreen onIniciarConsulta={(consultationId) => navigate(`/consulta?consultationId=${consultationId}`)} />;
 }
 
 function AppRoutes() {
@@ -115,16 +115,16 @@ function AppRoutes() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/pacientes" element={<PatientsRoute />} />
-          <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsuariosScreen /></RoleRoute>} />
-          <Route path="/recepcionistas" element={<RoleRoute roles={['ADMIN']}><RecepcionistasScreen /></RoleRoute>} />
-          <Route path="/plantillas" element={<RoleRoute roles={['ADMIN']}><AdministracionPlantillasScreen /></RoleRoute>} />
-          <Route path="/citas-global" element={<RoleRoute roles={['ADMIN', 'RECEPTIONIST']}><AgendaGlobalScreen /></RoleRoute>} />
-          <Route path="/reportes" element={<RoleRoute roles={['ADMIN']}><ReportesScreen /></RoleRoute>} />
-          <Route path="/agendamiento" element={<RoleRoute roles={['RECEPTIONIST']}><AgendamientoScreen /></RoleRoute>} />
-          <Route path="/notificaciones" element={<RoleRoute roles={['RECEPTIONIST']}><NotificacionesScreen /></RoleRoute>} />
+          <Route path="/usuarios" element={<RoleRoute roles={['ADMIN']}><UsersScreen /></RoleRoute>} />
+          <Route path="/recepcionistas" element={<RoleRoute roles={['ADMIN']}><ReceptionistsScreen /></RoleRoute>} />
+          <Route path="/plantillas" element={<RoleRoute roles={['ADMIN']}><TemplateManagementScreen /></RoleRoute>} />
+          <Route path="/citas-global" element={<RoleRoute roles={['ADMIN', 'RECEPTIONIST']}><GlobalScheduleScreen /></RoleRoute>} />
+          <Route path="/reportes" element={<RoleRoute roles={['ADMIN']}><ReportsScreen /></RoleRoute>} />
+          <Route path="/agendamiento" element={<RoleRoute roles={['RECEPTIONIST']}><AppointmentBookingScreen /></RoleRoute>} />
+          <Route path="/notificaciones" element={<RoleRoute roles={['RECEPTIONIST']}><NotificationsScreen /></RoleRoute>} />
           <Route path="/mi-agenda" element={<RoleRoute roles={['DOCTOR']}><DoctorAgendaRoute /></RoleRoute>} />
-          <Route path="/historial" element={<RoleRoute roles={['DOCTOR']}><HistorialScreen /></RoleRoute>} />
-          <Route path="/consulta" element={<RoleRoute roles={['DOCTOR']}><ConsultaScreen /></RoleRoute>} />
+          <Route path="/historial" element={<RoleRoute roles={['DOCTOR']}><MedicalHistoryScreen /></RoleRoute>} />
+          <Route path="/consulta" element={<RoleRoute roles={['DOCTOR']}><ConsultationScreen /></RoleRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

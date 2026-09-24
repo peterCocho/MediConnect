@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 
 
-// 1. Isotipo personalizado que reemplaza al estetoscopio
+// 1. Custom brand mark replacing the stethoscope
 const MediConnectBrandIcon = ({ className = "w-14 h-14 text-white" }) => (
   <svg
     className={className}
@@ -56,16 +56,16 @@ export function LoginScreen() {
   return (
     <div className="relative min-h-screen w-full bg-[#F4F7F9]">
 
-      {/* ===== FONDO: Animación (cubre toda la pantalla) ===== */}
+      {/* ===== BACKGROUND: Animation (covers entire screen) ===== */}
       <div className="absolute inset-0 z-0">
         <AnimatedGradient config={{ preset: "Oceanic" }} />
         <div className="absolute inset-0 bg-[#001d3d]/20 mix-blend-multiply" />
       </div>
 
-      {/* ===== CONTENIDO: Columna en móvil/tablet, fila en desktop ===== */}
+      {/* ===== CONTENT: Column on mobile/tablet, row on desktop ===== */}
       <div className="relative z-10 flex min-h-screen w-full flex-col lg:flex-row">
 
-        {/* ----- Bloque Logo + Nombre (altura natural) ----- */}
+        {/* ----- Logo + Name block (natural height) ----- */}
         <div className="flex w-full flex-col items-center justify-center px-6 pt-8 pb-6 text-center text-white sm:pt-10 md:pt-12 lg:w-1/2 lg:py-0 lg:px-8">
           <div className="mb-3 flex justify-center sm:mb-4 md:mb-6 lg:mb-8">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-md sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-24 lg:w-24">
@@ -80,7 +80,7 @@ export function LoginScreen() {
           </p>
         </div>
 
-        {/* ----- Bloque Tarjeta de Login (ocupa el resto y centra) ----- */}
+        {/* ----- Login card block (takes remaining space, centered) ----- */}
         <div className="flex w-full flex-1 items-center justify-center px-4 pb-8 sm:px-6 md:px-10 lg:w-1/2 lg:p-8">
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-7 md:max-w-lg md:p-8 lg:max-w-md lg:p-10">
 

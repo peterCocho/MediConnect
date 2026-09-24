@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * This service ensures the existence of the primary 'admin' user upon application
  * initialization. It performs secure password hashing at runtime using the
- * configured {@link PasswordEncoder} and assigns the required administrative
+ * configured {@link Argon2PasswordEncoder} and assigns the required administrative
  * privileges, leveraging external environment variables to maintain credential security.
  */
 

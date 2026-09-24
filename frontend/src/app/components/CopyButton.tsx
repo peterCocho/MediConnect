@@ -3,14 +3,14 @@ import React, { useState, useCallback } from 'react'
 
 
 interface CopyButtonProps {
-  text: string; // El texto que se debe copiar (ej: m.phoneNumber)
+  text: string; // Text to copy, for example m.phoneNumber
 }
 
 const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
   const [isCopied, setIsCopied] = useState(false);
   
   /**
-   * Función para copiar el texto al portapapeles y gestionar el estado visual.
+   * Copies the text to the clipboard and manages the visual state.
    */
   const handleCopy = useCallback(async () => {
     if (!text) return;
@@ -18,11 +18,11 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
     try {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
-      // Desactivar el mensaje de éxito después de 2 segundos
+      // Hide the success message after two seconds
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
       console.error('Error al copiar el texto: ', error);
-      // Opcionalmente, podrías mostrar un mensaje de error aquí
+      // An error message could be displayed here if needed
     }
   }, [text]);
 
@@ -32,17 +32,17 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
       className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition duration-150 ${
         isCopied 
           ? 'bg-green-500 text-white cursor-not-allowed' 
-          : 'bg-[#34D399] hover:bg-[#2dd4bf] text-white shadow-md' // Verde para el botón de acción
+          : 'bg-[#34D399] hover:bg-[#2dd4bf] text-white shadow-md' // Green action button style
       }`}
       disabled={isCopied}
     >
-      {/* Icono y texto basados en el estado */}
+      {/* Icon and text based on the current state */}
       {isCopied ? (
         <>✅ Copiado</>
       ) : (
         <>📋 Copiar</>
       )}
-      {/* Opcional: Añadir un icono de copia o checkmark aquí usando librerías como Lucide/Heroicons */}
+      {/* An optional copy or checkmark icon could be added here using Lucide or Heroicons */}
     </button>
   );
 };

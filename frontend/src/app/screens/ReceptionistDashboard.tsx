@@ -216,7 +216,7 @@ const [recentAppointmentsRes, todayAppointmentsRes, notificationsRes] = await Pr
                             day: '2-digit', 
                             month: '2-digit', 
                             year: 'numeric',
-                            timeZone: 'America/Bogota' // Corrección de zona horaria
+                            timeZone: 'America/Bogota' // Timezone correction
                           })}
                         </td>
                         <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Hora">
@@ -224,7 +224,7 @@ const [recentAppointmentsRes, todayAppointmentsRes, notificationsRes] = await Pr
                             hour: '2-digit', 
                             minute: '2-digit', 
                             hour12: false,
-                            timeZone: 'America/Bogota' // Corrección de zona horaria
+                            timeZone: 'America/Bogota' // Timezone correction
                           })}
                         </td>
                         <td className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden" data-label="Paciente">Paciente #{cita.patientId}</td>

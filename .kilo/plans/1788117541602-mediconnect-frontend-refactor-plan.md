@@ -84,9 +84,9 @@ export function Sidebar({
 Los siguientes cambios YA están implementados correctamente:
 
 1. **Boolean Trap en Frontend** ✓
-   - `UsuariosScreen.tsx:13-14,194` - `isActive?: boolean; active?: boolean;` y `const isActive = usuario.active ?? usuario.isActive ?? false;`
-   - `RecepcionistasScreen.tsx:11-12,177` - mismo patrón
-   - `PacientesScreen.tsx:11-12,116` - mismo patrón
+   - `UsersScreen.tsx:13-14,194` - `isActive?: boolean; active?: boolean;` y `const isActive = usuario.active ?? usuario.isActive ?? false;`
+   - `ReceptionistsScreen.tsx:11-12,177` - mismo patrón
+   - `PatientsScreen.tsx:11-12,116` - mismo patrón
 
 2. **Table to Cards** ✓
    - Todas las pantallas con tablas ya usan el patrón `hidden md:table-header-group`, `block border-b mb-4 p-4 shadow-sm md:table-row md:mb-0 md:p-0 md:shadow-none`, y `flex justify-between items-center text-right md:table-cell md:text-left`
@@ -108,18 +108,18 @@ Los siguientes cambios YA están implementados correctamente:
 |----------|-------------|--------|
 | DashboardScreen | `/api/appointments`, `/api/reports/dashboard` | ✓ |
 | AgendaGlobalScreen | `/api/appointments` | ✓ |
-| UsuariosScreen | `/api/users/doctors` | ✓ |
-| RecepcionistasScreen | `/api/receptionists` | ✓ |
-| PacientesScreen | `/api/patients` | ✓ |
+| UsersScreen | `/api/users/doctors` | ✓ |
+| ReceptionistsScreen | `/api/receptionists` | ✓ |
+| PatientsScreen | `/api/patients` | ✓ |
 | AgendamientoScreen | `/api/patients`, `/api/users/doctors`, `/api/appointments/book` | ✓ |
-| NotificacionesScreen | `/api/whatsapp/messages/unread` | ✓ |
-| MiAgendaScreen | `/api/consultations` | ✓ |
-| MisPacientesScreen | `/api/patients`, `/api/consultations` | ✓ |
-| HistorialScreen | `/api/consultations/patient-timeline/{id}` | ✓ |
-| ConsultaScreen | `/api/consultations/{id}`, `/api/consultations/{id}/execute` | ✓ |
-| ReportesScreen | `/api/reports/dashboard` | ✓ |
+| NotificationsScreen | `/api/whatsapp/messages/unread` | ✓ |
+| MyScheduleScreen | `/api/consultations` | ✓ |
+| MyPatientsScreen | `/api/patients`, `/api/consultations` | ✓ |
+| MedicalHistoryScreen | `/api/consultations/patient-timeline/{id}` | ✓ |
+| ConsultationScreen | `/api/consultations/{id}`, `/api/consultations/{id}/execute` | ✓ |
+| ReportsScreen | `/api/reports/dashboard` | ✓ |
 | AdministracionPlantillasScreen | `/api/templates` | ✓ |
-| RegistroPacienteScreen | `/api/patients` | ✓ |
+| PatientRegistrationScreen | `/api/patients` | ✓ |
 
 ## Orden de Implementación Sugerida
 
