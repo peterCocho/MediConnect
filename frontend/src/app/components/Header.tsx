@@ -5,7 +5,7 @@ import api from '../../service/api';
 import { User } from '../types/user';
 import { translateStatus } from '../utils/statusLabels';
 
-interface HeaderProps {
+export interface HeaderProps {
   user: User;
   onLogout: () => void;
 }

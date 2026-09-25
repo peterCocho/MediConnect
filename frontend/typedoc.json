@@ -1,0 +1,19 @@
+{
+  "name": "MediConnect Frontend",
+  "entryPoints": ["./src"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "tsconfig": "tsconfig.docs.json",
+  "skipErrorChecking": true,
+  "externalSymbolLinkMappings": {
+    "react-hook-form": {
+      "useFormContext": "https://react-hook-form.com/docs/useformcontext"
+    }
+  },
+  "intentionallyNotExported": [
+    "SidebarContextProps",
+    "CarouselProps",
+    "THEMES",
+    "PaginationLinkProps"
+  ]
+}

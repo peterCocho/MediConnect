@@ -50,7 +50,7 @@ const ReceptionistIcon = ({ className }: { className?: string }) => (
   <Icon icon="mdi:headset" className={className} />
 );
 
-interface SidebarProps {
+export interface SidebarProps {
   activeScreen: string;
   onNavigate: (screen: string) => void;
   userRole: UserRole;

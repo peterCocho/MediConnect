@@ -28,6 +28,22 @@ const emptyForm: PatientFormState = {
   isActive: true,
 };
 
+/**
+ * Full CRUD directory of the patients registered in the clinic.
+ *
+ * Loads a paginated list (10 per page) via `GET /api/patients` and provides
+ * local search by name, document or phone, patient creation
+ * (`POST /api/patients`), inline editing (`PUT /api/patients/{id}`) and an
+ * activate/deactivate toggle that also goes through `PUT /api/patients/{id}`.
+ *
+ * @remarks
+ * Accepts no props. The create and edit forms render conditionally above the
+ * table and share a single draft state.
+ *
+ * @returns The patients panel with the create/edit forms, a searchable and
+ * paginated table with status badges, a loading spinner, and inline
+ * success/error feedback.
+ */
 export function PatientsScreen() {
   const [pacientes, setPacientes] = useState<PatientRow[]>([]);
   const [query, setQuery] = useState('');

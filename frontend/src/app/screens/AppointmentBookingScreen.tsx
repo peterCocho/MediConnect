@@ -35,6 +35,22 @@ const emptyForm: AppointmentForm = {
   time: '',
 };
 
+/**
+ * Screen for booking a new medical appointment.
+ *
+ * Loads active patients and doctors into two select dropdowns and submits the
+ * chosen slot via `POST /api/appointments/book` with a fixed one-hour duration
+ * in the Colombia timezone (-05:00). The created appointment starts in a
+ * pending state awaiting WhatsApp confirmation by the patient.
+ *
+ * @remarks
+ * Accepts no props. Options are loaded on mount from `GET /api/patients` and
+ * `GET /api/users/doctors`.
+ *
+ * @returns The appointment booking form with patient and doctor selects, date
+ * and time inputs, an informational pending-confirmation notice, inline
+ * success/error feedback, and submit/clear actions.
+ */
 export function AppointmentBookingScreen() {
   const [patients, setPatients] = useState<PatientOption[]>([]);
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);

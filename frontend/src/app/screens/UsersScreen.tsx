@@ -34,6 +34,24 @@ const emptyDoctorForm: DoctorForm = {
   specialty: '',
 };
 
+/**
+ * Administration panel (CRUD) for doctor accounts and credentials.
+ *
+ * Loads a paginated list (10 per page) via `GET /api/users/doctors` and lets
+ * the user create a doctor account (username, password, document, full name,
+ * email, phone and specialty) through `POST /api/users/doctors`, plus
+ * activate or deactivate an existing account via
+ * `PUT /api/users/doctors/{id}`.
+ *
+ * @remarks
+ * Accepts no props. The create form toggles above the table, and each row
+ * shows a status badge with an activate/deactivate button that disables while
+ * the request is in flight.
+ *
+ * @returns The doctors panel with the creation form, a paginated table with
+ * status badges and pagination controls, a loading spinner, and inline
+ * success/error feedback.
+ */
 export function UsersScreen() {
   const [users, setUsers] = useState<DoctorRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);

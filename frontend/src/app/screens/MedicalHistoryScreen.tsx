@@ -16,6 +16,21 @@ type Consultation = {
   medicalRecordId: number;
 };
 
+/**
+ * Read-only screen that displays a patient's chronological clinical history.
+ *
+ * Reads `medicalRecordId` from the URL query string and fetches the
+ * consultation timeline via `GET /api/consultations/patient-timeline/{id}`,
+ * rendering each past consultation as a timeline entry with date, status,
+ * doctor ID, ICD-10 diagnosis, reason for visit and management plan.
+ *
+ * @remarks
+ * Accepts no props. If `medicalRecordId` is missing from the URL, an error
+ * message is shown instead of the timeline.
+ *
+ * @returns The clinical history timeline with a medical-record header, a
+ * loading spinner, or an error banner when the history cannot be loaded.
+ */
 export function MedicalHistoryScreen() {
   const [searchParams] = useSearchParams();
   const [consultations, setConsultations] = useState<Consultation[]>([]);

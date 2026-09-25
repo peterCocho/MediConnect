@@ -15,6 +15,21 @@ const emptyForm: PatientForm = {
   birthDate: '',
 };
 
+/**
+ * Form screen for registering a new patient in the clinic.
+ *
+ * Collects identity document, full name, phone number and birth date and
+ * submits them via `POST /api/patients`; on success the form resets and a
+ * confirmation notice explains that the patient's medical record is created
+ * automatically.
+ *
+ * @remarks
+ * Accepts no props. The phone number is required for the automatic WhatsApp
+ * appointment notifications.
+ *
+ * @returns The patient registration form with inline success/error feedback
+ * and submit/cancel actions.
+ */
 export function PatientRegistrationScreen() {
   const [form, setForm] = useState<PatientForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);

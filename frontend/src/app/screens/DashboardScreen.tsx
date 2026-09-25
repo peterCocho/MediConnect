@@ -42,6 +42,24 @@ const getRelativeDateKey = (daysFromToday: number) => {
   return getDateKey(date);
 };
 
+/**
+ * Main administration dashboard summarizing global system activity.
+ *
+ * Loads recent appointments, the full appointment set, active doctors and
+ * report metrics via `Promise.allSettled` (`GET /api/appointments`,
+ * `GET /api/users/doctors`, `GET /api/reports/dashboard`), then derives KPI
+ * cards: monthly cancellation rate, doctors with scheduled appointments today,
+ * consultations completed in the last 7 days, and the most frequent ICD-10
+ * diagnoses.
+ *
+ * @remarks
+ * Accepts no props. Failed requests degrade gracefully to zero-valued metrics
+ * instead of blocking the whole panel.
+ *
+ * @returns The dashboard panel with four KPI cards, a recent-appointments
+ * table, a loading spinner, or an error banner when the panel cannot be
+ * loaded.
+ */
 export function DashboardScreen() {
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [allAppointments, setAllAppointments] = useState<AppointmentRow[]>([]);

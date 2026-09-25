@@ -46,6 +46,24 @@ const getRelativeDateKey = (daysFromToday: number) => {
   return getDateKey(date);
 };
 
+/**
+ * Operational dashboard for the reception role, summarizing the day's patient
+ * flow.
+ *
+ * Loads recent appointments (5 latest), today's appointments filtered by a
+ * start/end-of-day range and unread WhatsApp messages via `Promise.all`
+ * (`GET /api/appointments`, `GET /api/whatsapp/messages/unread`), then derives
+ * five KPI cards: scheduled arrivals, patients scheduled today, daily
+ * confirmation rate, unread messages and released slots (cancellations).
+ *
+ * @remarks
+ * Accepts no props. Metrics are computed client-side from today's
+ * appointments; dates are rendered in the America/Bogota timezone.
+ *
+ * @returns The reception panel with five KPI cards and a recent-appointments
+ * table, a loading spinner, or an error banner when the panel cannot be
+ * loaded.
+ */
 export function ReceptionistDashboard() {
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [patients, setPatients] = useState<PatientSummary[]>([]);

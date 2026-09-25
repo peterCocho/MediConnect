@@ -7,6 +7,22 @@ type DashboardMetric = {
   topDiagnoses: Array<{ icd10Code: string; occurrences: number }>;
 };
 
+/**
+ * Reports module that visualizes the clinic's operational statistics.
+ *
+ * Fetches dashboard metrics via `GET /api/reports/dashboard` and renders two
+ * summary cards (total completed consultations and number of top diagnoses)
+ * plus a horizontal bar chart of the most frequent ICD-10 diagnoses, with bar
+ * widths normalized against the total number of consultations.
+ *
+ * @remarks
+ * Accepts no props. The total is clamped to a minimum of 1 when there are no
+ * consultations to avoid division by zero.
+ *
+ * @returns The reports view with two summary cards and the ICD-10 frequency
+ * bars, a loading spinner, or an error banner when the metrics cannot be
+ * loaded.
+ */
 export function ReportsScreen() {
   const [metrics, setMetrics] = useState<DashboardMetric | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { clearSession, getUserFromToken, login as loginRequest, logout as logoutRequest } from '../../service/api';
 import type { User } from '../types/user';
 
-interface AuthContextValue {
+export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;

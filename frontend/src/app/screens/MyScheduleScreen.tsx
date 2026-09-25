@@ -16,6 +16,24 @@ const getDateKey = (value: string | Date) => {
   return date.toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' });
 };
 
+/**
+ * Individual schedule screen listing the authenticated doctor's consultations
+ * for today.
+ *
+ * Fetches consultations via `GET /api/consultations`, filters them down to
+ * the current date (America/Bogota timezone) and derives three KPI cards:
+ * total of the day, waiting room (SCHEDULED or CONFIRMED) and attended
+ * (COMPLETED or FINALIZED). The table shows only SCHEDULED consultations,
+ * each with an "Iniciar Consulta" button that reports the consultation
+ * through the `onIniciarConsulta` callback.
+ *
+ * @param props - Component props.
+ * @param props.onIniciarConsulta - Optional callback invoked with the
+ * `consultationId` when the doctor clicks "Iniciar Consulta" on a row.
+ *
+ * @returns The schedule view with three KPI cards and the scheduled
+ * consultations table, or a loading screen while the agenda is being fetched.
+ */
 export function MyScheduleScreen({ onIniciarConsulta }: { onIniciarConsulta?: (consultationId: number) => void }) {
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -24,6 +24,24 @@ const getDateKey = (value: string | Date) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+/**
+ * Dashboard panel that summarizes a doctor's clinical schedule and recent
+ * consultations.
+ *
+ * Loads consultations via `GET /api/consultations` and derives three KPI
+ * cards: the next appointment today (SCHEDULED or CONFIRMED), the number of
+ * consultations today, and the count of distinct patients attended in the
+ * last 30 days (COMPLETED or FINALIZED). A recent-consultations table renders
+ * date, time, medical record, ICD-10 diagnosis and a color-coded status badge.
+ *
+ * @remarks
+ * Accepts no props. Data is fetched once on mount and dates are rendered in
+ * the America/Bogota timezone.
+ *
+ * @returns The doctor's dashboard with three KPI cards and a
+ * recent-consultations table, a loading spinner, or an error banner when the
+ * schedule cannot be loaded.
+ */
 export function DoctorDashboard() {
   const [consultations, setConsultations] = useState<DoctorConsultation[]>([]);
   const [isLoading, setIsLoading] = useState(true);

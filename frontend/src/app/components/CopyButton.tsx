@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react'
 
 
-interface CopyButtonProps {
+export interface CopyButtonProps {
   text: string; // Text to copy, for example m.phoneNumber
 }
 

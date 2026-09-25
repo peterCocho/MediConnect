@@ -36,6 +36,25 @@ const statusColors: Record<string, { text: string; bg: string }> = {
 	COMPLETED: { text: "text-[#3B82F6]", bg: "bg-[#3B82F6]" }, // Blue
 };
 
+/**
+ * Master agenda screen showing every appointment registered in the system.
+ *
+ * Loads a paginated list (10 per page) plus the full appointment set via
+ * `GET /api/appointments` to render summary counters (total, confirmed,
+ * pending) and a paginated table with date, time, patient, doctor and a
+ * color-coded status. When the authenticated user has the RECEPTIONIST role,
+ * each row exposes a confirm action (`PATCH /api/appointments/{id}/confirm`)
+ * and a cancel action that opens a modal requiring a reason
+ * (`PATCH /api/appointments/{id}/cancel`).
+ *
+ * @remarks
+ * Accepts no props. The user's role is read from `useAuth()`, so confirmation
+ * and cancellation controls only render for receptionists.
+ *
+ * @returns The global schedule view with summary cards, a paginated
+ * appointments table, the cancellation modal, a loading spinner, or an error
+ * banner when the agenda cannot be loaded.
+ */
 export function GlobalScheduleScreen() {
 	const { user } = useAuth();
 	const [citasGlobal, setCitasGlobal] = useState<AppointmentRow[]>([]);

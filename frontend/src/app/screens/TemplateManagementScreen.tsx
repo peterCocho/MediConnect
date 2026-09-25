@@ -10,6 +10,24 @@ type Template = {
   isActive: boolean;
 };
 
+/**
+ * Management interface for the predefined clinical note templates.
+ *
+ * Lists all templates (`GET /api/templates`) in a side-by-side layout with an
+ * editing form that creates (`POST /api/templates`), updates
+ * (`PUT /api/templates/{id}`) or toggles the active state of a template
+ * (`PATCH /api/templates/{id}/activate` and `.../deactivate`). Active
+ * templates can later be inserted into the consultation notes from
+ * ConsultationScreen.
+ *
+ * @remarks
+ * Accepts no props. The same form serves both creation and editing; name and
+ * content are required before submitting.
+ *
+ * @returns The template panel with the templates table (status badges and
+ * edit/activate actions), the creation/editing form, a loading spinner, and
+ * inline error feedback.
+ */
 export function TemplateManagementScreen() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,12 +132,12 @@ export function TemplateManagementScreen() {
           <h1 className="mb-2 text-2xl font-bold text-[#1E293B] sm:text-3xl">Plantillas Clínicas</h1>
           <p className="text-sm text-[#64748B] sm:text-base">Gestione las estructuras base para notas médicas</p>
         </div>
-        <button 
-          onClick={handleCancelEdit}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#2C7A7B] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#235E5F]"
+        <button
+            onClick={handleCancelEdit}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#2C7A7B] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#235E5F]"
         >
           <Plus className="h-4 w-4" />
-          Nueva Plantilla
+          Limpiar Formulario
         </button>
       </div>
 

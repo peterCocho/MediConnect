@@ -26,6 +26,21 @@ const MediConnectBrandIcon = ({ className = "w-14 h-14 text-white" }) => (
 );
 
 
+/**
+ * Login screen providing access control for MediConnect.
+ *
+ * Renders a branded credentials form that calls `login()` from `AuthContext`
+ * with the entered username and password and, on success, navigates to
+ * `/dashboard` with `replace: true`. Backend validation errors are surfaced
+ * inline.
+ *
+ * @remarks
+ * Accepts no props. The form is pre-filled with the default backend
+ * credentials (admin / admin123) shown as a hint below the form.
+ *
+ * @returns The login view with an animated background, username and password
+ * inputs, an inline error banner, and a submit button with a loading state.
+ */
 export function LoginScreen() {
   const navigate = useNavigate();
   const { login } = useAuth();

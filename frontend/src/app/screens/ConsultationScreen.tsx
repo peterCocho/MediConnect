@@ -33,6 +33,25 @@ const emptyForm: ConsultationForm = {
   managementPlan: '',
 };
 
+/**
+ * Active workspace where a doctor records a medical consultation in progress.
+ *
+ * Reads `consultationId` from the URL query string, loads the consultation via
+ * `GET /api/consultations/{id}` and the active clinical templates via
+ * `GET /api/templates/active`, and renders sections for vital signs, ICD-10
+ * diagnosis, reason for visit, clinical notes (with insertable templates) and
+ * the management plan. Submitting saves everything through
+ * `PUT /api/consultations/{id}/execute`.
+ *
+ * @remarks
+ * Accepts no props. The consultation is identified by the `consultationId`
+ * URL query parameter; if it is missing, an error message is shown instead of
+ * the form.
+ *
+ * @returns The consultation form with its loading state, inline success/error
+ * feedback, and save/cancel actions, or a loading indicator while the
+ * consultation is being fetched.
+ */
 export function ConsultationScreen() {
   const [searchParams] = useSearchParams();
   const consultationId = searchParams.get('consultationId');

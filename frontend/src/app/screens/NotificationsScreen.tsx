@@ -16,6 +16,26 @@ type AppointmentDTO = { id: number; patientId: number; startTime: string; };
 
 type ActiveTab = 'UNREAD' | 'PENDING' | 'ERRORS';
 
+/**
+ * Operations inbox that tracks notifications, pending appointments and system
+ * errors.
+ *
+ * Loads three datasets with `Promise.allSettled` on mount: unread WhatsApp
+ * messages (`GET /api/whatsapp/messages/unread`), appointments awaiting
+ * confirmation (`GET /api/appointments/pending-confirmation`) and the error log
+ * with its total count (`GET /api/errors`, `GET /api/errors/count`). Clicking
+ * a summary card switches the active tab between the three tables; messages
+ * can be marked as read (`PATCH /api/whatsapp/messages/{id}/read`), errors can
+ * be dismissed (`DELETE /api/errors/{id}`) and the error table is paginated.
+ *
+ * @remarks
+ * Accepts no props. Each request fails independently thanks to
+ * `Promise.allSettled`, so one unavailable endpoint does not block the rest.
+ *
+ * @returns The notifications center with three counter cards, the tabbed
+ * content tables, pagination controls for the error log, and a loading
+ * spinner while the initial data loads.
+ */
 export function NotificationsScreen() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('UNREAD');
   

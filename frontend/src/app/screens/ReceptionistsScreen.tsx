@@ -28,6 +28,24 @@ const emptyReceptionistForm: ReceptionistForm = {
   phone: '',
 };
 
+/**
+ * Administration panel for the clinic's receptionist staff.
+ *
+ * Loads a paginated list (10 per page) via `GET /api/receptionists` and lets
+ * the user create a receptionist account (username, password, full name,
+ * identity document and phone) through `POST /api/receptionists`, plus
+ * activate or deactivate an existing account via
+ * `PUT /api/receptionists/{id}`.
+ *
+ * @remarks
+ * Accepts no props. The create form toggles above the table, and each row
+ * shows a status badge with an activate/deactivate button that disables while
+ * the request is in flight.
+ *
+ * @returns The receptionists panel with the creation form, a paginated table
+ * with status badges and pagination controls, a loading spinner, and inline
+ * success/error feedback.
+ */
 export function ReceptionistsScreen() {
   const [recepcionistas, setRecepcionistas] = useState<Receptionist[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -42,7 +42,7 @@ function useCarousel() {
   return context;
 }
 
-function Carousel({
+export function Carousel({
   orientation = "horizontal",
   opts,
   setApi,

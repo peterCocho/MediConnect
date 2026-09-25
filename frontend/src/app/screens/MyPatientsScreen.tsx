@@ -21,6 +21,24 @@ type PatientRow = {
   medicalRecordId?: number | null;
 };
 
+/**
+ * Screen listing the patients attended by the authenticated doctor.
+ *
+ * Fetches the doctor's consultations via `GET /api/consultations/patients`,
+ * de-duplicates them by medical record and renders a searchable table
+ * (identity document, full name, phone, birth date, medical record) whose
+ * "Ver Historial" button reports the selected record through the
+ * `onVerHistorial` callback.
+ *
+ * @param props - Component props.
+ * @param props.onVerHistorial - Optional callback invoked with the
+ * `medicalRecordId` when the user clicks "Ver Historial" on a row; the button
+ * is disabled when the row has no associated medical record.
+ *
+ * @returns The patients directory with a search input, a table of attended
+ * patients, a loading spinner, or an error message when the list cannot be
+ * loaded.
+ */
 export function MyPatientsScreen({ onVerHistorial }: { onVerHistorial?: (medicalRecordId: number) => void }) {
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [query, setQuery] = useState('');
