@@ -66,30 +66,30 @@ MediConnect/
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/com/sena/backend/
-│       │   ├── config/           # Configuraciones generales
-│       │   ├── controller/       # Endpoints REST
-│       │   ├── domain/           # DTOs y enums
-│       │   ├── entity/           # Entidades
-│       │   ├── event/            # 
-│       │   ├── domain/           
-│       │   ├── exception/           
-│       │   ├── repository/       # Persistencia JPA
-│       │   ├── security/         # JWT y autorización
-│       │   ├── service/          # Lógica de negocio
-│       │   └── exception/        # Manejo de errores
+│       │   ├── config/           # General security and app configurations
+│       │   ├── controller/       # REST API endpoints
+│       │   ├── domain/           # DTOs and business models
+│       │   ├── entity/           # JPA database entities
+│       │   ├── event/            # Application event listeners and publishers
+│       │   ├── exception/        # Global error handling and custom exceptions
+│       │   ├── repository/       # Spring Data JPA persistence interfaces
+│       │   ├── scheduler/        # Background tasks and cron jobs
+│       │   ├── security/         # JWT authentication and authorization filters
+│       │   ├── service/          # Business logic implementation
+│       │   └── specification/    # Criteria specifications for dynamic queries
 │       └── resources/
-│           ├── application.yml
-│           └── migration/         # Migraciones Flyway
+│           ├── application.yml    # Environment and database properties
+│           └── migration/         # Flyway database migration scripts
 │
 ├── frontend/
 │   ├── package.json
 │   └── src/
 │       ├── app/
-│       │   ├── components/       # Layout, sidebar y componentes UI
-│       │   ├── context/          # Contexto de autenticación
-│       │   ├── screens/          # Pantallas por módulo y rol
-│       │   └── types/            # Tipos TypeScript
-│       └── service/              # Cliente Axios y API
+│       │   ├── components/       # Layouts, sidebar, and UI primitives
+│       │   ├── context/          # React authentication state context
+│       │   ├── screens/          # Application screens grouped by role/module
+│       │   └── types/            # TypeScript interface definitions
+│       └── service/              # Axios client and HTTP service endpoints
 │
 └── README.md
 ```
