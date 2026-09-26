@@ -48,14 +48,14 @@ admin:
 # n8n local integration
 #n8n:
 #  api:
-#    key: ${N8N_API_KEY:dev-secret-key-123}
+#    key: ${N8N_API_KEY}
 #  webhook:
 #    url: ${N8N_WEBHOOK_URL:https://masteracademy1492.app.n8n.cloud/webhook/confirmacion-cita}
 #    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://masteracademy1492.app.n8n.cloud/webhook/recordatorio-cita}
 
 #n8n:
 #  api:
-#    key: ${N8N_API_KEY:dev-secret-key-123}
+#    key: ${N8N_API_KEY}
 #  webhook:
 #    url: ${N8N_WEBHOOK_URL:https://masteracademy1492.app.n8n.cloud/webhook-test/confirmacion-cita}
 #    reminder-url: ${N8N_WEBHOOK_REMINDER_URL:https://masteracademy1492.app.n8n.cloud/webhook-test/recordatorio-cita}
@@ -64,7 +64,7 @@ admin:
 # n8n remote integration
 n8n:
   api:
-    key: ${N8N_API_KEY:dev-secret-key-123}
+    key: ${N8N_API_KEY}
   webhook:
     url: ${N8N_WEBHOOK_URL:http://20.186.24.153:5678/webhook/confirmacion-cita}
     reminder-url: ${N8N_WEBHOOK_REMINDER_URL:http://20.186.24.153:5678/webhook/recordatorio-cita}

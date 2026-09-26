@@ -66,8 +66,13 @@ MediConnect/
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/com/sena/backend/
+│       │   ├── config/           # Configuraciones generales
 │       │   ├── controller/       # Endpoints REST
-│       │   ├── domain/           # Entidades, DTOs y enums
+│       │   ├── domain/           # DTOs y enums
+│       │   ├── entity/           # Entidades
+│       │   ├── event/            # 
+│       │   ├── domain/           
+│       │   ├── exception/           
 │       │   ├── repository/       # Persistencia JPA
 │       │   ├── security/         # JWT y autorización
 │       │   ├── service/          # Lógica de negocio
@@ -103,8 +108,8 @@ La configuración se encuentra en `backend/src/main/resources/application.yml`. 
 
 ```text
 DB_URL=jdbc:postgresql://localhost:5432/mediconnect
-DATABASE_USERNAME_P=postgres
-DB_PASSWORD_P=12345
+DATABASE_USERNAME_P=tu_usuario_de_postgres
+DB_PASSWORD_P=tu_clave_de_postgres
 JWT_SECRET=una_clave_segura
 JWT_EXP_MINUTES=180
 ADMIN_SETUP_PASSWORD=admin123
