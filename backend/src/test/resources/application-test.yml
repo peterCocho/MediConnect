@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Test database configuration pointing to local Docker container
+    url: jdbc:postgresql://localhost:5432/mediconnect
+    username: postgres
+    password: 12345
+  jpa:
+    hibernate:
+      ddl-auto: create # Creates tables from entities, drops them on next run if changed
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: America/Bogota
+  flyway:
+    # Disables Flyway migrations for the test environment
+    enabled: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Security
+jwt:
+  # Static secret for testing to avoid context load failure
+  secret: test_secret_key_which_must_be_long_enough_for_hmac_sha256
+  expiration_minutes: 180
+
+# Initial admin setup bootstrap (DataInitializer)
+admin:
+  setup:
+    password: admin123_test
+
+# n8n mock integration for tests
+n8n:
+  api:
+    key: mock_n8n_key
+  webhook:
+    url: http://localhost:8080/mock-webhook
+    reminder-url: http://localhost:8080/mock-reminder
+
+# Evolution API mock configuration for tests
+evolution:
+  api:
+    url: http://localhost:8080/mock-evolution
+    key: mock_evolution_key
+    instance: mock_instance
