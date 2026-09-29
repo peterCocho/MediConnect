@@ -1,6 +1,6 @@
 package com.sena.backend.service.impl;
 
-import com.sena.backend.domain.notification.NotificationCallbackRequestDTO; // Arreglar import si es necesario
+import com.sena.backend.domain.notification.NotificationCallbackRequestDTO;
 import com.sena.backend.entity.Notification;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.NotificationRepository;
@@ -26,7 +26,11 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + dto.getNotificationId()));
 
         n.setStatus(dto.getStatus());
-        n.setProviderId(dto.getProviderId()); // getProviderId()
+
+        if (dto.getProviderId() != null && !dto.getProviderId().isBlank()) {
+            n.setProviderId(dto.getProviderId());
+        }
+
         n.setUpdatedAt(OffsetDateTime.now());
 
         notificationRepository.save(n);

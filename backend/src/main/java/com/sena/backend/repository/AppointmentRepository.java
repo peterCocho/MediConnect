@@ -14,8 +14,8 @@ import java.util.List;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
     /**
-     * Busca las citas de un médico específico dentro de un rango de tiempo.
-     * Útil para validaciones de disponibilidad en la capa de servicio.
+     * Finds a specific doctor's appointments within a time range.
+     * Useful for availability validations in the service layer.
      */
     // Fetch paginated appointments within a specific start time range
     Page<Appointment> findByStartTimeBetween(OffsetDateTime start, OffsetDateTime end, Pageable pageable);
@@ -53,5 +53,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByStatus(AppointmentStatus status);
 
     List<Appointment> findByStatusAndStartTimeBefore(AppointmentStatus status, OffsetDateTime deadline);
+
+    // Fetch a specific patient's appointments matching a status (used by WhatsappLogServiceImpl
+    // to avoid fetching ALL PENDING_CONFIRMATION appointments in the system for every message)
+    List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);
 
 }

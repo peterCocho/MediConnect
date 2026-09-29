@@ -3,7 +3,6 @@ package com.sena.backend.service.impl;
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
 import com.sena.backend.domain.doctor.DoctorResponse;
 import com.sena.backend.domain.doctor.UpdateDoctorRequest;
-import com.sena.backend.domain.receptionist.CreateReceptionistRequest;
 import com.sena.backend.entity.Doctor;
 import com.sena.backend.entity.User;
 import com.sena.backend.entity.Role;
@@ -23,8 +22,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -62,7 +59,6 @@ public class UserServiceImpl implements UserService {
     public void createDoctor(CreateDoctorRequest req) {
         User user = internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_DOCTOR");
 
-
         Doctor doctor = Doctor.builder()
                 .documentNumber(req.getDocumentNumber())
                 .fullName(req.getFullName())
@@ -74,14 +70,6 @@ public class UserServiceImpl implements UserService {
 
         doctorRepository.save(doctor);
     }
-
-//    @Override
-//    @Transactional
-//    public void createReceptionist(CreateReceptionistRequest req) {
-//        internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_RECEPTION");
-//    }
-    
-
 
     private User internalCreateUser(String username, String password, String roleName) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -147,8 +135,6 @@ public class UserServiceImpl implements UserService {
                 .isActive(doctor.getUser().getIsActive())
                 .build();
     }
-
-
 
     @Override
     @Transactional(readOnly = true)

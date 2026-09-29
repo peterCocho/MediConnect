@@ -3,6 +3,7 @@ package com.sena.backend.service.impl;
 import com.sena.backend.domain.template.ClinicalTemplateRequestDTO;
 import com.sena.backend.domain.template.ClinicalTemplateResponseDTO;
 import com.sena.backend.entity.ClinicalTemplate;
+import com.sena.backend.exception.BusinessRuleException;
 import com.sena.backend.exception.ResourceNotFoundException;
 import com.sena.backend.repository.ClinicalTemplateRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,13 +96,13 @@ class ClinicalTemplateServiceImplTest {
     }
 
     @Test
-    @DisplayName("createTemplate: un nombre ya existente lanza IllegalArgumentException y no guarda")
-    void createTemplate_withExistingName_throwsIllegalArgument() {
+    @DisplayName("createTemplate: un nombre ya existente lanza BusinessRuleException (409) y no guarda")
+    void createTemplate_withExistingName_throwsBusinessRuleException() {
         when(repository.existsByName("Consulta general")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createTemplate(request("Consulta general", "x", "Motivo:")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("already exists");
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Consulta general");
 
         verify(repository, never()).save(any());
     }
@@ -169,6 +170,31 @@ class ClinicalTemplateServiceImplTest {
 
         assertThat(response.getName()).isEqualTo("Consulta general v2");
         assertThat(response.getTemplateContent()).isEqualTo("Motivo:\nDiagnóstico:");
+    }
+
+    @Test
+    @DisplayName("updateTemplate: renombrar a un nombre que ya usa otra plantilla lanza BusinessRuleException y no guarda")
+    void updateTemplate_withNameTakenByAnotherTemplate_throwsBusinessRuleException() {
+        when(repository.findById(1L)).thenReturn(Optional.of(activeTemplate));
+        when(repository.existsByName("Control pediátrico")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateTemplate(1L, request("Control pediátrico", "x", "y")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Control pediátrico");
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateTemplate: conservar el mismo nombre no valida duplicados contra sí misma")
+    void updateTemplate_withSameName_doesNotCheckDuplicateAgainstItself() {
+        when(repository.findById(1L)).thenReturn(Optional.of(activeTemplate));
+        when(repository.save(any(ClinicalTemplate.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.updateTemplate(1L, request("Consulta general", "Descripción nueva", "Motivo:"));
+
+        verify(repository, never()).existsByName(any());
+        verify(repository).save(any(ClinicalTemplate.class));
     }
 
     @Test

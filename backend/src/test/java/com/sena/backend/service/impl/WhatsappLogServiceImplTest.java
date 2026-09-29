@@ -39,7 +39,8 @@ import static org.mockito.Mockito.when;
  * Cubre la bandeja de mensajes de WhatsApp sin leer que ve la recepcionista:
  * cada mensaje se enriquece con el nombre del paciente (buscando el teléfono
  * con y sin el prefijo '+') y con las especialidades de sus citas en estado
- * PENDING_CONFIRMATION; además cubre el marcado como leído.
+ * PENDING_CONFIRMATION, resueltas con una consulta filtrada por paciente y
+ * un único findAllById para los médicos; además cubre el marcado como leído.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WhatsappLogServiceImpl")
@@ -80,8 +81,8 @@ class WhatsappLogServiceImplTest {
                 .build();
     }
 
-    private Appointment pendingAppointment(Long id, Long patientId, Long doctorId) {
-        return Appointment.builder().id(id).patientId(patientId).doctorId(doctorId)
+    private Appointment pendingAppointment(Long id, Long doctorId) {
+        return Appointment.builder().id(id).patientId(17L).doctorId(doctorId)
                 .status(AppointmentStatus.PENDING_CONFIRMATION).build();
     }
 
@@ -95,15 +96,14 @@ class WhatsappLogServiceImplTest {
         when(messageLogRepository.findByIsReadFalseOrderByReceivedAtDesc())
                 .thenReturn(List.of(messageFrom("573107984713")));
         when(patientRepository.findByPhone("573107984713")).thenReturn(Optional.of(patient));
-        when(appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION)).thenReturn(List.of(
-                pendingAppointment(1L, 17L, 4L),
-                pendingAppointment(2L, 17L, 4L),   // mismo médico: la especialidad no se repite
-                pendingAppointment(3L, 17L, 9L),
-                pendingAppointment(4L, 99L, 4L))); // otro paciente: se ignora
-        when(doctorRepository.findById(4L))
-                .thenReturn(Optional.of(Doctor.builder().id(4L).specialty("Dermatología").build()));
-        when(doctorRepository.findById(9L))
-                .thenReturn(Optional.of(Doctor.builder().id(9L).specialty("Pediatría").build()));
+        when(appointmentRepository.findByPatientIdAndStatus(17L, AppointmentStatus.PENDING_CONFIRMATION))
+                .thenReturn(List.of(
+                        pendingAppointment(1L, 4L),
+                        pendingAppointment(2L, 4L),   // mismo médico: la especialidad no se repite
+                        pendingAppointment(3L, 9L)));
+        when(doctorRepository.findAllById(List.of(4L, 9L))).thenReturn(List.of(
+                Doctor.builder().id(4L).specialty("Dermatología").build(),
+                Doctor.builder().id(9L).specialty("Pediatría").build()));
 
         List<WhatsappMessageLogDTO> result = whatsappLogService.getUnreadMessages();
 
@@ -115,6 +115,10 @@ class WhatsappLogServiceImplTest {
         assertThat(dto.getReceivedAt()).isEqualTo(receivedAt);
         assertThat(dto.getPatientName()).isEqualTo("Pedro Contreras");
         assertThat(dto.getSpecialty()).isEqualTo("Dermatología, Pediatría");
+
+        // Ya no se consulta el estado de TODO el sistema ni un findById por cita
+        verify(appointmentRepository, never()).findByStatus(any());
+        verify(doctorRepository, never()).findById(any());
     }
 
     @Test
@@ -125,7 +129,8 @@ class WhatsappLogServiceImplTest {
                 .thenReturn(List.of(messageFrom("573107984713")));
         when(patientRepository.findByPhone("573107984713")).thenReturn(Optional.empty());
         when(patientRepository.findByPhone("+573107984713")).thenReturn(Optional.of(patient));
-        when(appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION)).thenReturn(List.of());
+        when(appointmentRepository.findByPatientIdAndStatus(17L, AppointmentStatus.PENDING_CONFIRMATION))
+                .thenReturn(List.of());
 
         List<WhatsappMessageLogDTO> result = whatsappLogService.getUnreadMessages();
 
@@ -140,8 +145,8 @@ class WhatsappLogServiceImplTest {
         when(messageLogRepository.findByIsReadFalseOrderByReceivedAtDesc())
                 .thenReturn(List.of(messageFrom("573107984713")));
         when(patientRepository.findByPhone("573107984713")).thenReturn(Optional.of(patient));
-        when(appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION))
-                .thenReturn(List.of(pendingAppointment(4L, 99L, 4L)));
+        when(appointmentRepository.findByPatientIdAndStatus(17L, AppointmentStatus.PENDING_CONFIRMATION))
+                .thenReturn(List.of());
 
         List<WhatsappMessageLogDTO> result = whatsappLogService.getUnreadMessages();
 
@@ -183,9 +188,9 @@ class WhatsappLogServiceImplTest {
         when(messageLogRepository.findByIsReadFalseOrderByReceivedAtDesc())
                 .thenReturn(List.of(messageFrom("573107984713")));
         when(patientRepository.findByPhone("573107984713")).thenReturn(Optional.of(patient));
-        when(appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION))
-                .thenReturn(List.of(pendingAppointment(1L, 17L, 404L)));
-        when(doctorRepository.findById(404L)).thenReturn(Optional.empty());
+        when(appointmentRepository.findByPatientIdAndStatus(17L, AppointmentStatus.PENDING_CONFIRMATION))
+                .thenReturn(List.of(pendingAppointment(1L, 404L)));
+        when(doctorRepository.findAllById(List.of(404L))).thenReturn(List.of());
 
         List<WhatsappMessageLogDTO> result = whatsappLogService.getUnreadMessages();
 

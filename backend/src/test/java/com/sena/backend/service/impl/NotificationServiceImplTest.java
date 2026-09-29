@@ -74,6 +74,29 @@ class NotificationServiceImplTest {
     }
 
     @Test
+    @DisplayName("updateNotificationStatus: un callback sin providerId no borra el providerId ya guardado")
+    void updateNotificationStatus_withoutProviderId_keepsExistingProviderId() throws Exception {
+        Notification notification = Notification.builder()
+                .id(300L)
+                .destinationNumber("573107984713")
+                .status("SENT")
+                .providerId("wamid.ABC123")
+                .type("CONFIRMATION")
+                .updatedAt(OffsetDateTime.now().minusHours(1))
+                .build();
+        when(notificationRepository.findById(300L)).thenReturn(Optional.of(notification));
+
+        notificationService.updateNotificationStatus(callback(300L, "DELIVERED", null));
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+        Notification saved = captor.getValue();
+
+        assertThat(saved.getStatus()).isEqualTo("DELIVERED");
+        assertThat(saved.getProviderId()).isEqualTo("wamid.ABC123");
+    }
+
+    @Test
     @DisplayName("updateNotificationStatus: notificación inexistente lanza ResourceNotFoundException y no guarda")
     void updateNotificationStatus_withUnknownNotification_throwsResourceNotFound() {
         when(notificationRepository.findById(999L)).thenReturn(Optional.empty());

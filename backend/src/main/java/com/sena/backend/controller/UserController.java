@@ -4,7 +4,6 @@ import com.sena.backend.domain.doctor.DoctorResponse;
 import com.sena.backend.domain.doctor.UpdateDoctorRequest;
 import com.sena.backend.domain.role.AssignRoleRequest;
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
-import com.sena.backend.domain.receptionist.CreateReceptionistRequest;
 import com.sena.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "Users", description = "Endpoints for managing system users, doctors, receptionists, and role assignments")
+@Tag(name = "Users", description = "Endpoints for managing system users, doctors, and role assignments")
 public class UserController {
 
     private final UserService userService;
@@ -41,20 +40,10 @@ public class UserController {
         return ResponseEntity.status(201).build();
     }
 
-//    @Operation(summary = "Create a new receptionist", description = "Registers a new receptionist and creates their user account. Requires ADMIN role.")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "201", description = "Receptionist successfully created"),
-//            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
-//            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
-//            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
-//    })
-
-//    @PostMapping("/receptionists")
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    public ResponseEntity<Void> createReceptionist(@Valid @RequestBody CreateReceptionistRequest req) {
-//        userService.createReceptionist(req);
-//        return ResponseEntity.status(201).build();
-//    }
+    // La creación de recepcionistas vive en ReceptionistController (POST /api/receptionists),
+    // que sí persiste el perfil completo (documento, nombre, teléfono). El endpoint que
+    // existía aquí (POST /api/users/receptionists) solo creaba la cuenta de usuario y
+    // descartaba esos datos, dejando registros huérfanos. Se elimina para evitar esa ruta.
 
     @Operation(summary = "Assign a role", description = "Assigns a specific role to an existing user. Requires ADMIN role.")
     @ApiResponses(value = {

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,20 +64,26 @@ public class WhatsappLogServiceImpl implements WhatsappLogService {
         if (patient != null) {
             patientName = patient.getFullName();
 
-            // Use a final variable for the lambda expression
-            final Long finalPatientId = patient.getId();
+            // 2. Fetch only this patient's PENDING_CONFIRMATION appointments (filtered in the DB,
+            List<Appointment> pendingAppointments = appointmentRepository
+                    .findByPatientIdAndStatus(patient.getId(), AppointmentStatus.PENDING_CONFIRMATION);
 
-            // 2 & 3. Find ALL pending appointments for the patient and extract their unique specialties
-            List<String> patientSpecialties = appointmentRepository.findByStatus(AppointmentStatus.PENDING_CONFIRMATION)
-                    .stream()
-                    .filter(a -> a.getPatientId().equals(finalPatientId))
-                    .map(a -> doctorRepository.findById(a.getDoctorId())
-                            .map(Doctor::getSpecialty)
-                            .orElse("Unknown"))
-                    .distinct() // Prevent duplicate specialties in the string
-                    .toList();
+            if (!pendingAppointments.isEmpty()) {
+                // 3. Fetch the doctors involved in a single query instead of a
+                // findById per appointment.
+                List<Long> doctorIds = pendingAppointments.stream()
+                        .map(Appointment::getDoctorId)
+                        .distinct()
+                        .toList();
 
-            if (!patientSpecialties.isEmpty()) {
+                Map<Long, String> specialtyByDoctorId = doctorRepository.findAllById(doctorIds).stream()
+                        .collect(Collectors.toMap(Doctor::getId, Doctor::getSpecialty));
+
+                List<String> patientSpecialties = doctorIds.stream()
+                        .map(doctorId -> specialtyByDoctorId.getOrDefault(doctorId, "Unknown"))
+                        .distinct() // Prevent duplicate specialties in the string
+                        .toList();
+
                 specialty = String.join(", ", patientSpecialties);
             } else {
                 specialty = "Sin citas pendientes";

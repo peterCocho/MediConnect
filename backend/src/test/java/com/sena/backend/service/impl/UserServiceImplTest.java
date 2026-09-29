@@ -3,7 +3,6 @@ package com.sena.backend.service.impl;
 import com.sena.backend.domain.doctor.CreateDoctorRequest;
 import com.sena.backend.domain.doctor.DoctorResponse;
 import com.sena.backend.domain.doctor.UpdateDoctorRequest;
-import com.sena.backend.domain.receptionist.CreateReceptionistRequest;
 import com.sena.backend.entity.Doctor;
 import com.sena.backend.entity.Role;
 import com.sena.backend.entity.User;
@@ -43,10 +42,11 @@ import static org.mockito.Mockito.when;
  * Unit tests for UserServiceImpl.
  *
  * Cubre la gestión de cuentas del personal: asignación de roles, alta de
- * médicos (usuario ROLE_DOCTOR + perfil clínico) y recepcionistas
- * (usuario ROLE_RECEPTION), consulta/actualización de médicos y activación
- * o desactivación de cuentas. La contraseña nunca debe persistirse en texto
- * plano: siempre pasa por el Argon2PasswordEncoder.
+ * médicos (usuario ROLE_DOCTOR + perfil clínico), consulta/actualización de
+ * médicos y activación o desactivación de cuentas. La contraseña nunca debe
+ * persistirse en texto plano: siempre pasa por el Argon2PasswordEncoder.
+ * (La creación de recepcionistas se movió por completo a
+ * ReceptionistServiceImpl; ver ReceptionistServiceImplTest.)
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserServiceImpl")
@@ -107,16 +107,6 @@ class UserServiceImplTest {
         req.setEmail("agarcia@clinica.com");
         req.setPhone("573001112233");
         req.setSpecialty("Dermatología");
-        return req;
-    }
-
-    private CreateReceptionistRequest validReceptionistRequest() {
-        CreateReceptionistRequest req = new CreateReceptionistRequest();
-        req.setUsername("recepcion.ana");
-        req.setPassword("Secret123");
-        req.setFullName("Ana Recepción");
-        req.setIdentityDocument("1094999888");
-        req.setPhone("573009998877");
         return req;
     }
 
@@ -238,59 +228,6 @@ class UserServiceImplTest {
         verify(userRepository, never()).save(any());
         verifyNoInteractions(passwordEncoder, doctorRepository);
     }
-
-    // ------------------------------------------------------------------
-    // createReceptionist
-    // ------------------------------------------------------------------
-
-//    @Test
-//    @DisplayName("createReceptionist: crea un usuario ROLE_RECEPTION activo con contraseña cifrada")
-//    void createReceptionist_withValidData_createsActiveUserWithReceptionRole() {
-//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
-//        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.of(receptionRole));
-//        when(passwordEncoder.encode("Secret123")).thenReturn("hashed-reception");
-//        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-//
-//        userService.createReceptionist(validReceptionistRequest());
-//
-//        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-//        verify(userRepository).save(captor.capture());
-//        User saved = captor.getValue();
-//
-//        assertThat(saved.getUsername()).isEqualTo("recepcion.ana");
-//        assertThat(saved.getPassword()).isEqualTo("hashed-reception");
-//        assertThat(saved.getRole()).isSameAs(receptionRole);
-//        assertThat(saved.getIsActive()).isTrue();
-//
-//        verifyNoInteractions(doctorRepository);
-//    }
-//
-//    @Test
-//    @DisplayName("createReceptionist: un username ya existente lanza BusinessRuleException")
-//    void createReceptionist_withExistingUsername_throwsBusinessRuleException() {
-//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.of(doctorUser));
-//
-//        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
-//                .isInstanceOf(BusinessRuleException.class)
-//                .hasMessageContaining("recepcion.ana");
-//
-//        verify(userRepository, never()).save(any());
-//        verifyNoInteractions(roleRepository, passwordEncoder);
-//    }
-//
-//    @Test
-//    @DisplayName("createReceptionist: si el rol ROLE_RECEPTION no existe lanza ResourceNotFoundException")
-//    void createReceptionist_whenReceptionRoleMissing_throwsResourceNotFound() {
-//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
-//        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.empty());
-//
-//        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
-//                .isInstanceOf(ResourceNotFoundException.class)
-//                .hasMessageContaining("ROLE_RECEPTION");
-//
-//        verify(userRepository, never()).save(any());
-//        verifyNoInteractions(passwordEncoder);
-//    }
 
     // ------------------------------------------------------------------
     // getDoctorById
