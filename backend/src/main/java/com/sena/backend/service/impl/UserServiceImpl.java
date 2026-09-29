@@ -75,11 +75,11 @@ public class UserServiceImpl implements UserService {
         doctorRepository.save(doctor);
     }
 
-    @Override
-    @Transactional
-    public void createReceptionist(CreateReceptionistRequest req) {
-        internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_RECEPTION");
-    }
+//    @Override
+//    @Transactional
+//    public void createReceptionist(CreateReceptionistRequest req) {
+//        internalCreateUser(req.getUsername(), req.getPassword(), "ROLE_RECEPTION");
+//    }
     
 
 

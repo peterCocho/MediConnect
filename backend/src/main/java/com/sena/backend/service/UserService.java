@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 public interface UserService {
     void assignRoleToUser(String username, String roleName);
     void createDoctor(CreateDoctorRequest req);
-    void createReceptionist(CreateReceptionistRequest req);
+//    void createReceptionist(CreateReceptionistRequest req);
 
 
     Page<DoctorResponse> getAllDoctors(int page, int size, String sortBy, String fullName, String specialty, Boolean isActive);

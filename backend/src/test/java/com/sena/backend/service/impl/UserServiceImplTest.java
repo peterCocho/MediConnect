@@ -243,54 +243,54 @@ class UserServiceImplTest {
     // createReceptionist
     // ------------------------------------------------------------------
 
-    @Test
-    @DisplayName("createReceptionist: crea un usuario ROLE_RECEPTION activo con contraseña cifrada")
-    void createReceptionist_withValidData_createsActiveUserWithReceptionRole() {
-        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
-        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.of(receptionRole));
-        when(passwordEncoder.encode("Secret123")).thenReturn("hashed-reception");
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        userService.createReceptionist(validReceptionistRequest());
-
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-        User saved = captor.getValue();
-
-        assertThat(saved.getUsername()).isEqualTo("recepcion.ana");
-        assertThat(saved.getPassword()).isEqualTo("hashed-reception");
-        assertThat(saved.getRole()).isSameAs(receptionRole);
-        assertThat(saved.getIsActive()).isTrue();
-
-        verifyNoInteractions(doctorRepository);
-    }
-
-    @Test
-    @DisplayName("createReceptionist: un username ya existente lanza BusinessRuleException")
-    void createReceptionist_withExistingUsername_throwsBusinessRuleException() {
-        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.of(doctorUser));
-
-        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
-                .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("recepcion.ana");
-
-        verify(userRepository, never()).save(any());
-        verifyNoInteractions(roleRepository, passwordEncoder);
-    }
-
-    @Test
-    @DisplayName("createReceptionist: si el rol ROLE_RECEPTION no existe lanza ResourceNotFoundException")
-    void createReceptionist_whenReceptionRoleMissing_throwsResourceNotFound() {
-        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
-        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("ROLE_RECEPTION");
-
-        verify(userRepository, never()).save(any());
-        verifyNoInteractions(passwordEncoder);
-    }
+//    @Test
+//    @DisplayName("createReceptionist: crea un usuario ROLE_RECEPTION activo con contraseña cifrada")
+//    void createReceptionist_withValidData_createsActiveUserWithReceptionRole() {
+//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
+//        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.of(receptionRole));
+//        when(passwordEncoder.encode("Secret123")).thenReturn("hashed-reception");
+//        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+//
+//        userService.createReceptionist(validReceptionistRequest());
+//
+//        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+//        verify(userRepository).save(captor.capture());
+//        User saved = captor.getValue();
+//
+//        assertThat(saved.getUsername()).isEqualTo("recepcion.ana");
+//        assertThat(saved.getPassword()).isEqualTo("hashed-reception");
+//        assertThat(saved.getRole()).isSameAs(receptionRole);
+//        assertThat(saved.getIsActive()).isTrue();
+//
+//        verifyNoInteractions(doctorRepository);
+//    }
+//
+//    @Test
+//    @DisplayName("createReceptionist: un username ya existente lanza BusinessRuleException")
+//    void createReceptionist_withExistingUsername_throwsBusinessRuleException() {
+//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.of(doctorUser));
+//
+//        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
+//                .isInstanceOf(BusinessRuleException.class)
+//                .hasMessageContaining("recepcion.ana");
+//
+//        verify(userRepository, never()).save(any());
+//        verifyNoInteractions(roleRepository, passwordEncoder);
+//    }
+//
+//    @Test
+//    @DisplayName("createReceptionist: si el rol ROLE_RECEPTION no existe lanza ResourceNotFoundException")
+//    void createReceptionist_whenReceptionRoleMissing_throwsResourceNotFound() {
+//        when(userRepository.findByUsername("recepcion.ana")).thenReturn(Optional.empty());
+//        when(roleRepository.findByName("ROLE_RECEPTION")).thenReturn(Optional.empty());
+//
+//        assertThatThrownBy(() -> userService.createReceptionist(validReceptionistRequest()))
+//                .isInstanceOf(ResourceNotFoundException.class)
+//                .hasMessageContaining("ROLE_RECEPTION");
+//
+//        verify(userRepository, never()).save(any());
+//        verifyNoInteractions(passwordEncoder);
+//    }
 
     // ------------------------------------------------------------------
     // getDoctorById

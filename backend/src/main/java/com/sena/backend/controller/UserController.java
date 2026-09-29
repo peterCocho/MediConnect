@@ -41,19 +41,20 @@ public class UserController {
         return ResponseEntity.status(201).build();
     }
 
-    @Operation(summary = "Create a new receptionist", description = "Registers a new receptionist and creates their user account. Requires ADMIN role.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Receptionist successfully created"),
-            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
-    })
-    @PostMapping("/receptionists")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> createReceptionist(@Valid @RequestBody CreateReceptionistRequest req) {
-        userService.createReceptionist(req);
-        return ResponseEntity.status(201).build();
-    }
+//    @Operation(summary = "Create a new receptionist", description = "Registers a new receptionist and creates their user account. Requires ADMIN role.")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "201", description = "Receptionist successfully created"),
+//            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+//            @ApiResponse(responseCode = "401", description = "Unauthorized - JWT token is missing or invalid"),
+//            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
+//    })
+
+//    @PostMapping("/receptionists")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//    public ResponseEntity<Void> createReceptionist(@Valid @RequestBody CreateReceptionistRequest req) {
+//        userService.createReceptionist(req);
+//        return ResponseEntity.status(201).build();
+//    }
 
     @Operation(summary = "Assign a role", description = "Assigns a specific role to an existing user. Requires ADMIN role.")
     @ApiResponses(value = {
