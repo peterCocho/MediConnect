@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +19,16 @@ import org.springframework.stereotype.Component;
  * initialization. It performs secure password hashing at runtime using the
  * configured {@link Argon2PasswordEncoder} and assigns the required administrative
  * privileges, leveraging external environment variables to maintain credential security.
+ * <p>
+ * Excluded under the "test" profile (@Profile("!test")): in that profile
+ * application-test.yml disables Flyway and uses ddl-auto: create, so the
+ * roles table starts empty — this runner's job is bootstrapping a real
+ * deployment, not every integration-test run, and the seed data a single
+ * test needs (if any) belongs in that test's own @BeforeEach, not here.
  */
 
 @Component
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
