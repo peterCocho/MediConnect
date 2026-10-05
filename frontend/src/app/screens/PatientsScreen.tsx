@@ -91,7 +91,7 @@ export function PatientsScreen() {
       identityDocument: patient.identityDocument ?? '',
       fullName: patient.fullName ?? '',
       phone: patient.phone ?? '',
-      birthDate: patient.birthDate ? new Date(patient.birthDate).toISOString().slice(0, 10) : '',
+      birthDate: patient.birthDate ? patient.birthDate.split('T')[0] : '',
       isActive: patient.active ?? patient.isActive ?? true,
     });
     setShowCreateForm(false);
@@ -498,15 +498,16 @@ export function PatientsScreen() {
 														{paciente.phone}
 													</td>
 													<td
-														className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
-														data-label="Fecha Nacimiento">
-														{paciente.birthDate
-															? new Date(paciente.birthDate).toLocaleDateString(
-																	"es-ES",
-																)
-															: "—"}
-													</td>
-													<td
+    className="flex items-center justify-between gap-3 px-0 py-2 text-right text-sm text-[#1E293B] break-words whitespace-normal before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
+    data-label="Fecha Nacimiento">
+    {paciente.birthDate
+        ? (() => {
+                const datePart = paciente.birthDate.split('T')[0];
+                const [year, month, day] = datePart.split('-');
+                return `${day}/${month}/${year}`;
+            })()
+        : "—"}
+</td>													<td
 														className="flex items-center justify-between gap-3 px-0 py-2 text-right before:mr-2 before:text-[#64748B] before:content-[attr(data-label)] md:table-cell md:px-6 md:py-4 md:text-left md:before:hidden"
 														data-label="Estado">
 														<span
