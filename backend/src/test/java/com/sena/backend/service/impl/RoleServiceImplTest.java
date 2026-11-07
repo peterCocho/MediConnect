@@ -92,13 +92,14 @@ class RoleServiceImplTest {
     void listRoles_returnsAllRolesFromRepository() {
         Role admin = Role.builder().id(1).name("ROLE_ADMIN").description("Administrador").build();
         Role doctor = Role.builder().id(2).name("ROLE_DOCTOR").description("Médico").build();
-        when(roleRepository.findAll()).thenReturn(List.of(admin, doctor));
+        Role receptionist = Role.builder().id(3).name("ROLE_RECEPTIONIST").description("Recepcionista").build();
+        when(roleRepository.findAll()).thenReturn(List.of(admin, doctor, receptionist));
 
         List<Role> result = roleService.listRoles();
 
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(3);
         assertThat(result).extracting(Role::getName)
-                .containsExactly("ROLE_ADMIN", "ROLE_DOCTOR");
+                .containsExactly("ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_RECEPTIONIST");
         verify(roleRepository).findAll();
         verifyNoMoreInteractions(roleRepository);
     }
