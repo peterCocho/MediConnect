@@ -312,7 +312,28 @@ cd ../backend
 mvn test
 ```
 
-Si se usa PostgreSQL local, verifica que el backend pueda conectarse antes de iniciar el frontend. No ejecutes una segunda instancia del backend si el puerto `8080` ya está ocupado.
+Si se usa PostgreSQL local, verifica que el backend pueda conectarse antes de iniciar el frontend. No ejecutes una segunda instancia del backend si el puerto 8080 ya está ocupado.
+
+### 🧪 Pruebas automatizadas del backend
+
+El backend tiene dos niveles de prueba:
+
+- **Pruebas unitarias** (JUnit 5 + Mockito + AssertJ): prueban cada servicio de forma aislada, simulando sus repositorios. No requieren nada externo además de Maven.
+- **Pruebas de integración** (Testcontainers + PostgreSQL real): levantan un contenedor Docker con PostgreSQL limpio y el contexto completo de Spring Boot, para verificar lo que un mock no puede probar — cascadas reales de Hibernate, restricciones de la base de datos y concurrencia real con hilos y transacciones separadas.
+
+**Requisito para las pruebas de integración:** necesitas [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo (el ícono de la ballena activo en la bandeja del sistema) antes de ejecutar `mvn test`. Testcontainers se conecta al daemon de Docker local, levanta el contenedor de PostgreSQL automáticamente, lo usa y lo destruye al terminar — no hay que crearlo ni configurarlo a mano, y nunca toca tu base de datos real ni la del `.env`.
+
+> No necesitas crear el contenedor manualmente (no hace falta `docker run` ni `docker-compose up`): Testcontainers lo levanta, lo usa y lo elimina automáticamente en cada corrida de `mvn test`. Si quieres verlo con tus propios ojos, corre `docker ps` en otra terminal mientras los tests están corriendo — verás un contenedor `postgres:16-alpine` aparecer solo, vivir unos segundos, y desaparecer al terminar.
+
+```bash
+# Todas las pruebas (unitarias + integración; requiere Docker Desktop corriendo)
+mvn test
+
+# Solo una clase específica
+mvn test -Dtest=NombreDeLaClaseTest
+```
+
+> Si Docker Desktop no está corriendo, las pruebas unitarias se ejecutan igual sin problema. Solo las clases de integración (las que extienden `AbstractIntegrationTest`, con sufijo `IT` en el nombre) requieren Docker, y fallarán con un error del tipo `Could not find a valid Docker environment` si no está disponible.
 
 ## 🛡️ Seguridad
 
@@ -323,7 +344,7 @@ Si se usa PostgreSQL local, verifica que el backend pueda conectarse antes de in
 
 ## 🎓 Contexto académico
 
-MediConnect fue desarrollado como proyecto de grado para el Técnico en Programación de Software del SENA (Servicio Nacional de Aprendizaje), cumpliendo con los estándares y competencias exigidos por el programa. El proyecto integra buenas prácticas de arquitectura backend, diseño de interfaces por rol y automatización de procesos mediante servicios externos (n8n, Evolution API), como evidencia de las competencias adquiridas durante la formación.
+MediConnect fue desarrollado como proyecto productivo para el Técnico en Programación de Software del SENA (Servicio Nacional de Aprendizaje), cumpliendo con los estándares y competencias exigidos por el programa. El proyecto integra buenas prácticas de arquitectura backend, diseño de interfaces por rol y automatización de procesos mediante servicios externos (n8n, Evolution API), como evidencia de las competencias adquiridas durante la formación.
 
 ## Licencia
 
