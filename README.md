@@ -47,6 +47,7 @@ MediConnect es una plataforma web para la gestión de clínicas médicas. Permit
 - Axios
 - Lucide React
 - Recharts
+- TypeDoc
 
 ## 🤖 Integración con WhatsApp y n8n
 
@@ -175,6 +176,26 @@ Para generar el build de producción:
 ```bash
 npm run build
 ```
+
+## 📚 Documentación generada
+
+### Backend (OpenAPI / Swagger)
+
+Generada automáticamente por Springdoc a partir de las anotaciones del código. Con el backend corriendo:
+
+- UI interactiva: `http://localhost:8080/swagger-ui.html`
+- JSON crudo: `http://localhost:8080/v3/api-docs`
+
+### Frontend (TypeDoc)
+
+Generada a partir de los comentarios y tipos de TypeScript del frontend.
+
+```bash
+cd frontend
+npx typedoc
+```
+
+Documentación publicada: **https://petercocho.github.io/MediConnect/**
 
 ## 🔐 Autenticación y autorización
 
